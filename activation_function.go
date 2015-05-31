@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	// The activation functions used in CPPN nodes.
+	// The activation functions used in neural net nodes.
 	// Reference: http://www.computing.dcu.ie/~humphrys/Notes/Neural/sigmoid.html
 	ACTIVATION_SIGMOID = "sigmoid"
 	// Reference: http://www.cs.ucf.edu/~hastings/index.php?content=ann

@@ -7,50 +7,50 @@ import (
 	"strconv"
 )
 
-// NeatCppn is NEAT CPPN: NeuroEvolution of Augmenting Topologies CPPN, a nerual net that builds its own structure through
-// mating and mutation. NEAT CPPNs tend to develop minimal internal connections to do the work they need. It is also not necessary
-// to attempt to structure their insides.
-type NeatCppn struct {
-	InOut    CppnInOut
+// NeatNeuralNet is NeuroEvolution of Augmenting Topologies neural ent, a neural net that builds its own structure through
+// mating and mutation. NEAT neural nets tend to develop minimal internal connections to do the work they need.
+// It is also not necessary to attempt to structure their insides.
+type NeatNeuralNet struct {
+	InOut    NeuralNetInOut
 	Genome   NeatGenome
 	topology computeTopology
 }
 
-// NewNeatCppn creates a new well-formed CPPN for the given inputs/outputs. All outputs must be able to produce a value when
-// the CPPN is run so one random connction to an inptu will be made for each output. The new next innovation number (used to
+// NewNeatNeuralNet creates a new well-formed NEAT neural net for the given inputs/outputs. All outputs must be able to produce a value when
+// the neural net is run so one random connction to an inptu will be made for each output. The new next innovation number (used to
 // identify genes across the experiment)
-func NewNeatCppn(inOut CppnInOut) (cppn NeatCppn) {
+func NewNeatNeuralNet(inOut NeuralNetInOut) (neuralNet NeatNeuralNet) {
 
-	// Start a new CPPN.
-	cppn = NeatCppn{
+	// Start a new neural net.
+	neuralNet = NeatNeuralNet{
 		InOut: inOut,
 	}
 
 	// Connect every output to one of the input values.
-	for _, out := range cppn.InOut.Outputs {
+	for _, out := range neuralNet.InOut.Outputs {
 
 		// Pick a random input.
 		var ok bool
-		var inputIndex int = rand.Intn(len(cppn.InOut.Inputs))
-		var in string = cppn.InOut.Inputs[inputIndex]
+		var inputIndex int = rand.Intn(len(neuralNet.InOut.Inputs))
+		var in string = neuralNet.InOut.Inputs[inputIndex]
 
 		// Pick a random weight.
 		var weight float64
 		weight = rand.Float64() // Actually will never by 1.0 but will be less than 1.0.
 
 		// Make the connection. Should always work.
-		if ok = cppn.addConnection(in, out, weight); !ok {
-			panic(fmt.Sprintf("Failed to create connection from '%s' to '%s' when creating a new NeatCppn", in, out))
+		if ok = neuralNet.addConnection(in, out, weight); !ok {
+			panic(fmt.Sprintf("Failed to create connection from '%s' to '%s' when creating a new NeatNeuralNet", in, out))
 		}
 	}
 
-	// We have a minimal well-formed CPPN.
-	return cppn
+	// We have a minimal well-formed neural net.
+	return neuralNet
 }
 
 // addConnection creates a new connection in the genome. Indicates if the connect was added. It will not be added if the
 // connection woudl be invalid because it duplicates an existing connection or creates a circular dependency.
-func (c *NeatCppn) addConnection(from string, to string, weight float64) (wasAdded bool) {
+func (c *NeatNeuralNet) addConnection(from string, to string, weight float64) (wasAdded bool) {
 
 	// Verify we can add this gene.
 
@@ -127,10 +127,10 @@ func (c *NeatCppn) addConnection(from string, to string, weight float64) (wasAdd
 	return true
 }
 
-// addNode adds a node to the NEAT CPPN. The node is always a hidden node appearing on an existing connection,
+// addNode adds a node to the NEAT neural net. The node is always a hidden node appearing on an existing connection,
 // splitting it into two connections. One connection goes from the original source node to the hidden node.
 // The other goes from the hidden node to the original destination node.
-func (c *NeatCppn) addNode(connectionGeneIndex int, function string) {
+func (c *NeatNeuralNet) addNode(connectionGeneIndex int, function string) {
 
 	// Only enabled genes can be split..
 	if !c.Genome.Genes[connectionGeneIndex].IsEnabled {
@@ -162,9 +162,9 @@ func (c *NeatCppn) addNode(connectionGeneIndex int, function string) {
 	c.Genome.Genes = append(c.Genome.Genes, NeatGene{GeneId: newGeneId(), IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: nodeId, To: to, Weight: weight})
 }
 
-// MutateAddNode adds a new node to the CPPN with a randomly picked activation function and spliting a randomly selected
+// MutateAddNode adds a new node to the neural net with a randomly picked activation function and spliting a randomly selected
 // existing connection, putting the node in the middle of it.
-func (c *NeatCppn) MutateAddNode(availableFunctions []string) {
+func (c *NeatNeuralNet) MutateAddNode(availableFunctions []string) {
 
 	// If we can't pick an activation function, we can't create a new node.
 	if len(availableFunctions) == 0 {
@@ -191,10 +191,10 @@ func (c *NeatCppn) MutateAddNode(availableFunctions []string) {
 	c.addNode(geneIndex, function)
 }
 
-// MutateAddConnection adds a new valid connection to the CPPN randomly wiring two nodes together.
+// MutateAddConnection adds a new valid connection to the neural net randomly wiring two nodes together.
 // It's possible that it randomly attempts to make a connection that is invalid (creating a circular depenency).
 // It will try up to max attempts to keep making connections, and indicate if one was made.
-func (c *NeatCppn) MutateAddConnection(maxAttempts int) (wasAdded bool) {
+func (c *NeatNeuralNet) MutateAddConnection(maxAttempts int) (wasAdded bool) {
 
 	// If we don't know how long we can go, report an issue.
 	if maxAttempts < 1 {
@@ -246,7 +246,7 @@ func (c *NeatCppn) MutateAddConnection(maxAttempts int) (wasAdded bool) {
 }
 
 // MutateChangeConnectionWeight changes the weight of a randomly selected enabled connection to a random value between 0.0 and 1.0.
-func (c *NeatCppn) MutateChangeConnectionWeight() {
+func (c *NeatNeuralNet) MutateChangeConnectionWeight() {
 
 	// Randomly pick an enabled connection.
 	// First count and remember enabled connections.
@@ -264,13 +264,13 @@ func (c *NeatCppn) MutateChangeConnectionWeight() {
 	c.Genome.Genes[geneIndex].Weight = rand.Float64() // 0.0 to 1.0. Actually will never by 1.0 but will be less than 1.0.
 }
 
-// Mate mates two CPPNs to create a new offspring. The structure of the child's genome is the genome of the fitter parent
+// Mate mates two neural nets to create a new offspring. The structure of the child's genome is the genome of the fitter parent
 // (so the hidden nodes in the child will be the hidden nodes of the fitter parent). For every enabled connection gene
 // shared between the two parents, the connection weight will be randomly picked from one or the other. If no genes
 // are modified (a possibility), the child will be identical to the fitter parent.
-func Mate(fitterParent NeatCppn, otherParent NeatCppn) (child NeatCppn) {
+func Mate(fitterParent NeatNeuralNet, otherParent NeatNeuralNet) (child NeatNeuralNet) {
 	// Start the child from the parent.
-	child = NeatCppn{
+	child = NeatNeuralNet{
 		InOut:  fitterParent.InOut, // in/out is fixed for an experiment so not a problem if it gets cross referenced in anyway.
 		Genome: NeatGenome{},
 	}
@@ -315,24 +315,24 @@ func Mate(fitterParent NeatCppn, otherParent NeatCppn) (child NeatCppn) {
 	return child
 }
 
-// Clone creates a clone of the CPPN, identical but no shared data.
-func (c *NeatCppn) Clone() (clone NeatCppn) {
-	clone = NeatCppn{
+// Clone creates a clone of the neural net, identical but no shared data.
+func (c *NeatNeuralNet) Clone() (clone NeatNeuralNet) {
+	clone = NeatNeuralNet{
 		InOut:  c.InOut,          // in/out is fixed for an experiment so not a problem if it gets cross referenced in anyway.
 		Genome: c.Genome.Clone(), // No shared gene data. Copied instead.
 	}
 	return clone
 }
 
-// RandomizedClone creates a clone of the CPPN and randomizes the clone's connection weights without altering the
-// the structure. Once an initial CPPN structure is created for an experiment, create new members of the population by
-// by cloning the template CPPN. The new weights will be between 0.0 and 1.0.
-func (c *NeatCppn) RandomizedClone() (clone NeatCppn) {
-	clone = NeatCppn{
+// RandomizedClone creates a clone of the neural net and randomizes the clone's connection weights without altering the
+// the structure. Once an initial neural net structure is created for an experiment, create new members of the population by
+// by cloning the template neural net. The new weights will be between 0.0 and 1.0.
+func (c *NeatNeuralNet) RandomizedClone() (clone NeatNeuralNet) {
+	clone = NeatNeuralNet{
 		InOut:  c.InOut, // in/out is fixed for an experiment so not a problem if it gets cross referenced in anyway.
 		Genome: NeatGenome{},
 	}
-	// The genomes need to be copied/modified one at a time and referentially distinct between the CPPNs.
+	// The genomes need to be copied/modified one at a time and referentially distinct between the neural nets.
 	for _, origGene := range c.Genome.Genes {
 		var cloneGene NeatGene = origGene
 		if cloneGene.IsEnabled == true && cloneGene.Type == _GENE_TYPE_CONNECTION {
@@ -343,18 +343,18 @@ func (c *NeatCppn) RandomizedClone() (clone NeatCppn) {
 	return clone
 }
 
-// PrepareComputeTopology prepares a CPPN to be computed, building internal datastructures for the task.
-func (c *NeatCppn) PrepareComputeTopology() {
+// PrepareComputeTopology prepares a neural net to be computed, building internal datastructures for the task.
+func (c *NeatNeuralNet) PrepareComputeTopology() {
 	var ok bool
 	if c.topology, ok = makeComputeTopology(c.InOut, c.Genome.Genes); !ok {
 		// Somehow we ended up with a circular dependency in our genome.
 		// Should never happen.
-		panic(fmt.Sprintf("CPPN has a circular dependency in Genome: %+v", c.Genome.Genes))
+		panic(fmt.Sprintf("Neural net has a circular dependency in Genome: %+v", c.Genome.Genes))
 	}
 }
 
-// Compute takes all the inputs and passes them through the CPPN to get the outputs.
-func (c *NeatCppn) Compute(inputs map[string]float64) (outputs map[string]float64) {
+// Compute takes all the inputs and passes them through the neural net to get the outputs.
+func (c *NeatNeuralNet) Compute(inputs map[string]float64) (outputs map[string]float64) {
 	var ok bool
 
 	// Have we created a topology yet?

@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// The structure of a CPPN, ready for computation
+// The structure of a neural net, ready for computation
 type computeTopology struct {
 	orderedNodes []string                   // The order nodes should be calculated in.
 	nodes        map[string]topologicalNode // The nodes in a form that is easy to compute.
@@ -34,12 +34,12 @@ func (n *topologicalNode) addSink(node string, weight float64) {
 	n.sinks[node] = weight
 }
 
-// makeComputeTopology returns the computational form of a CPPN, a data format fit for computing the output from a CPPN.
+// makeComputeTopology returns the computational form of a neural net, a data format fit for computing the output from a inputs.
 // This method is also used to determine if there is a circular dependency when randomly adding new connections.
 // All input errors will panic except circular dependencies. All inputs should be sanitized by the time they reach
 // this code, but the circular dependencies can be made by random mutation of connections. For circular dependencies,
 // ok will be false.
-func makeComputeTopology(inOut CppnInOut, genes []NeatGene) (compute computeTopology, noCircular bool) {
+func makeComputeTopology(inOut NeuralNetInOut, genes []NeatGene) (compute computeTopology, noCircular bool) {
 	var ok bool
 
 	// Create a map of all the nodes and inputs to them.
@@ -91,7 +91,7 @@ func makeComputeTopology(inOut CppnInOut, genes []NeatGene) (compute computeTopo
 	// Verify that each output has sources feeding it a value. To compute, each output must be defined.
 	for _, out := range inOut.Outputs {
 		if nodeMap[out].inputCount == 0 {
-			panic(fmt.Sprintf("CPPN output '%s' has no values feeding it.", out))
+			panic(fmt.Sprintf("ANN output '%s' has no values feeding it.", out))
 		}
 	}
 

@@ -43,7 +43,7 @@ func RunExperiment(experimentName string, config Config, selector Selector, scor
 	}
 
 	// Ensure the interface defined in the config is valid.
-	experiment.config.CppnInOut.validate()
+	experiment.config.NeuralNetInOut.validate()
 
 	// Get the randomness rolling.
 	rand.Seed(time.Now().UnixNano())
@@ -58,8 +58,8 @@ func RunExperiment(experimentName string, config Config, selector Selector, scor
 	// a single specimen in a single species. In the first generation, this neural net will
 	// be mutated into a full population through the normal mechanism to fill out a generation.
 	var population Population = NewPopulation(experiment.config.Population)
-	var cppn NeatCppn = NewNeatCppn(experiment.config.CppnInOut)
-	population.AddCppn(cppn, 0.0, 0.0, nil) // The specimen has no scores.
+	var neuralNet NeatNeuralNet = NewNeatNeuralNet(experiment.config.NeuralNetInOut)
+	population.AddNeuralNet(neuralNet, 0.0, 0.0, nil) // The specimen has no scores.
 
 	// Keep track if this experiment becomes stagnant (fitness never improving).
 	// In this case, we have found some maxima and cannot move beyond it.
@@ -94,30 +94,30 @@ func RunExperiment(experimentName string, config Config, selector Selector, scor
 		// the fittest specimens from the prior generation.
 		population.FillOut()
 
-		// Dump the cppns from the population for examining, ready for scoring.
-		var cppns []NeatCppn = population.DumpSpecimensAsCppns()
+		// Dump the neural nets from the population for examining, ready for scoring.
+		var neuralNets []NeatNeuralNet = population.DumpSpecimensAsNeuralNets()
 
-		// Score each Cppn, one at a time. Build a specimen for each CPPN, indicating its scores.
+		// Score each neural net, one at a time. Bundle with its scores to make a specimen.
 		var highestScore float64
-		for i, cppn := range cppns {
+		for i, neuralNet := range neuralNets {
 
 			// For scoring get these results:
 			//
-			//  score is the score for the cppn
+			//  score is the score for the neural net
 			//  bonus is decided by meta-decisions (e.g. novelty search), 0.0 if nothing
 			//  outcomes are for use with multi-outcome selectors (e.g. hyper-volume indicator), null otherwise
 			var score float64
 			var bonus float64
 			var outcomes []float64
 
-			// Score this cppn.
-			score, bonus, outcomes = scorer.Score(cppn, cppns, i)
+			// Score this neural net.
+			score, bonus, outcomes = scorer.Score(neuralNet, neuralNets, i)
 			if score > highestScore {
 				highestScore = score
 			}
 
 			// Re-add the specimen into the population.
-			population.AddCppn(cppn, score, bonus, outcomes)
+			population.AddNeuralNet(neuralNet, score, bonus, outcomes)
 		}
 
 		// Modify the scores of the specimens by the size of their species.

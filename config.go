@@ -8,10 +8,10 @@ import (
 
 // Config is the genetic-specific experiment configuration details (loaded from a json file).
 type Config struct {
-	Population   PopulationConfig   // How should each generation's population be managed.
-	CppnInOut    CppnInOut          // What is the interface to the CPPNs in this experiment.
-	EndCondition EndConditionConfig // What determines when the experiment should end. If nothing, must manually stop.
-	Database     DatabaseConfig     // Database settings.
+	Population     PopulationConfig   // How should each generation's population be managed.
+	NeuralNetInOut NeuralNetInOut     // What is the interface to the neural nets in this experiment.
+	EndCondition   EndConditionConfig // What determines when the experiment should end. If nothing, must manually stop.
+	Database       DatabaseConfig     // Database settings.
 }
 
 // EndConditionConfig describes how a genetic experiment should end. If blank, then the experiment must be manually stopped.

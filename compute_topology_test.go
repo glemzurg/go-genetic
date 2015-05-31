@@ -12,14 +12,14 @@ var _ = Suite(&ComputeTopologySuite{})
 // Add the tests.
 
 func (s *ComputeTopologySuite) Test_MakeComputeTopology_Minimal(c *C) {
-	var inOut CppnInOut
+	var inOut NeuralNetInOut
 	var genes []NeatGene
 	var compute computeTopology
 	var ok bool
 	var expected computeTopology
 
 	// A simple compute topology.
-	inOut = CppnInOut{
+	inOut = NeuralNetInOut{
 		Inputs:  []string{"i1"},
 		Outputs: []string{"o1"},
 	}
@@ -56,14 +56,14 @@ func (s *ComputeTopologySuite) Test_MakeComputeTopology_Minimal(c *C) {
 }
 
 func (s *ComputeTopologySuite) Test_MakeComputeTopology_SimpleHiddenNodes(c *C) {
-	var inOut CppnInOut
+	var inOut NeuralNetInOut
 	var genes []NeatGene
 	var compute computeTopology
 	var ok bool
 	var expected computeTopology
 
 	// A simple compute topology.
-	inOut = CppnInOut{
+	inOut = NeuralNetInOut{
 		Inputs:  []string{"i1"},
 		Outputs: []string{"o1"},
 	}
@@ -130,11 +130,11 @@ func (s *ComputeTopologySuite) Test_MakeComputeTopology_SimpleHiddenNodes(c *C) 
 }
 
 func (s *ComputeTopologySuite) Test_MakeComputeTopology_ConnectionMadeTwice(c *C) {
-	var inOut CppnInOut
+	var inOut NeuralNetInOut
 	var genes []NeatGene
 
 	// A simple compute topology.
-	inOut = CppnInOut{
+	inOut = NeuralNetInOut{
 		Inputs:  []string{"i1"},
 		Outputs: []string{"o1"},
 	}
@@ -154,11 +154,11 @@ func (s *ComputeTopologySuite) Test_MakeComputeTopology_ConnectionMadeTwice(c *C
 }
 
 func (s *ComputeTopologySuite) Test_MakeComputeTopology_UnknownSourceNode(c *C) {
-	var inOut CppnInOut
+	var inOut NeuralNetInOut
 	var genes []NeatGene
 
 	// A simple compute topology.
-	inOut = CppnInOut{
+	inOut = NeuralNetInOut{
 		Inputs:  []string{"i1"},
 		Outputs: []string{"o1"},
 	}
@@ -178,11 +178,11 @@ func (s *ComputeTopologySuite) Test_MakeComputeTopology_UnknownSourceNode(c *C) 
 }
 
 func (s *ComputeTopologySuite) Test_MakeComputeTopology_UnknownSinkNode(c *C) {
-	var inOut CppnInOut
+	var inOut NeuralNetInOut
 	var genes []NeatGene
 
 	// A simple compute topology.
-	inOut = CppnInOut{
+	inOut = NeuralNetInOut{
 		Inputs:  []string{"i1"},
 		Outputs: []string{"o1"},
 	}
@@ -202,11 +202,11 @@ func (s *ComputeTopologySuite) Test_MakeComputeTopology_UnknownSinkNode(c *C) {
 }
 
 func (s *ComputeTopologySuite) Test_MakeComputeTopology_UnfedOutput(c *C) {
-	var inOut CppnInOut
+	var inOut NeuralNetInOut
 	var genes []NeatGene
 
 	// A simple compute topology.
-	inOut = CppnInOut{
+	inOut = NeuralNetInOut{
 		Inputs:  []string{"i1"},
 		Outputs: []string{"o1", "o2"}, // The new output has no connections to it.
 	}
@@ -221,17 +221,17 @@ func (s *ComputeTopologySuite) Test_MakeComputeTopology_UnfedOutput(c *C) {
 		NeatGene{GeneId: 8, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "3", To: "o1", Weight: 0.5},
 	}
 
-	c.Assert(func() { makeComputeTopology(inOut, genes) }, Panics, `CPPN output 'o2' has no values feeding it.`)
+	c.Assert(func() { makeComputeTopology(inOut, genes) }, Panics, `ANN output 'o2' has no values feeding it.`)
 }
 
 func (s *ComputeTopologySuite) Test_MakeComputeTopology_CircularDependencyA(c *C) {
-	var inOut CppnInOut
+	var inOut NeuralNetInOut
 	var genes []NeatGene
 	var compute computeTopology
 	var ok bool
 
 	// A simple compute topology.
-	inOut = CppnInOut{
+	inOut = NeuralNetInOut{
 		Inputs:  []string{"i1"},
 		Outputs: []string{"o1"},
 	}
@@ -253,13 +253,13 @@ func (s *ComputeTopologySuite) Test_MakeComputeTopology_CircularDependencyA(c *C
 }
 
 func (s *ComputeTopologySuite) Test_MakeComputeTopology_CircularDependencyB(c *C) {
-	var inOut CppnInOut
+	var inOut NeuralNetInOut
 	var genes []NeatGene
 	var compute computeTopology
 	var ok bool
 
 	// A simple compute topology.
-	inOut = CppnInOut{
+	inOut = NeuralNetInOut{
 		Inputs:  []string{"i1"},
 		Outputs: []string{"o1"},
 	}
@@ -281,13 +281,13 @@ func (s *ComputeTopologySuite) Test_MakeComputeTopology_CircularDependencyB(c *C
 }
 
 func (s *ComputeTopologySuite) Test_MakeComputeTopology_CircularDependencyC(c *C) {
-	var inOut CppnInOut
+	var inOut NeuralNetInOut
 	var genes []NeatGene
 	var compute computeTopology
 	var ok bool
 
 	// A simple compute topology.
-	inOut = CppnInOut{
+	inOut = NeuralNetInOut{
 		Inputs:  []string{"i1"},
 		Outputs: []string{"o1"},
 	}

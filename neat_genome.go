@@ -12,7 +12,7 @@ const (
 	_GENE_TYPE_NODE       = "node"
 )
 
-// NeatGenome is the genome of a NEAT CPPN.
+// NeatGenome is the genome of a NEAT neural net.
 type NeatGenome struct {
 	Genes []NeatGene
 }
@@ -27,7 +27,7 @@ func (g *NeatGenome) Clone() (clone NeatGenome) {
 
 // NeatGene is a single gene in a NeatGenome
 type NeatGene struct {
-	GeneId    uint64  // The unique (in an experiment) identity of this gene, shared by eventually many CPPNs.
+	GeneId    uint64  // The unique (in an experiment) identity of this gene, shared by eventually many neural nets.
 	IsEnabled bool    // Genes can be disabled, but need to remain in order to compare ancestry of specimens.
 	Type      string  // The type of gene this is.
 	From      string  // Describing the source of a connection.

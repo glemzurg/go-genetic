@@ -36,7 +36,7 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_NoSpeciesYet(c *C) {
 	c.Assert(population, DeepEquals, expectedPopulation)
 
 	// Add a specimen, which will create the first species.
-	population.AddCppn(NeatCppn{Genome: genomeA}, 10.0, 100.0, []float64{1.0, 2.0})
+	population.AddNeuralNet(NeatNeuralNet{Genome: genomeA}, 10.0, 100.0, []float64{1.0, 2.0})
 	expectedPopulation = Population{
 		config: config,
 		species: []Species{
@@ -44,10 +44,10 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_NoSpeciesYet(c *C) {
 				genome: genomeA, // Species has the identity genome of the first member.
 				Specimens: []Specimen{
 					Specimen{
-						Cppn:     NeatCppn{Genome: genomeA},
-						Score:    10.0,
-						Bonus:    100.0,
-						Outcomes: []float64{1.0, 2.0},
+						NeuralNet: NeatNeuralNet{Genome: genomeA},
+						Score:     10.0,
+						Bonus:     100.0,
+						Outcomes:  []float64{1.0, 2.0},
 					},
 				},
 			},
@@ -99,7 +99,7 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_MatchingSpecies(c *C) {
 	population.species = append(population.species, Species{genome: genomeA}) // Another matching genome is third.
 
 	// Add a specimen, will with match the second species.
-	population.AddCppn(NeatCppn{Genome: genomeA}, 0.0, 0.0, nil)
+	population.AddNeuralNet(NeatNeuralNet{Genome: genomeA}, 0.0, 0.0, nil)
 	expectedPopulation = Population{
 		config: config,
 		species: []Species{
@@ -110,7 +110,7 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_MatchingSpecies(c *C) {
 			Species{
 				genome: genomeA, // The specimen does match this one.
 				Specimens: []Specimen{
-					Specimen{Cppn: NeatCppn{Genome: genomeA}},
+					Specimen{NeuralNet: NeatNeuralNet{Genome: genomeA}},
 				},
 			},
 			Species{
@@ -145,7 +145,7 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_NoMatchingSpecies(c *C) {
 	population.species = append(population.species, Species{genome: genomeB}) // Won't match this species.
 
 	// Add a specimen, will with match the second species.
-	population.AddCppn(NeatCppn{Genome: genomeA}, 0.0, 0.0, nil)
+	population.AddNeuralNet(NeatNeuralNet{Genome: genomeA}, 0.0, 0.0, nil)
 	expectedPopulation = Population{
 		config: config,
 		species: []Species{
@@ -156,7 +156,7 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_NoMatchingSpecies(c *C) {
 			Species{
 				genome: genomeA, // This new species was added.
 				Specimens: []Specimen{
-					Specimen{Cppn: NeatCppn{Genome: genomeA}},
+					Specimen{NeuralNet: NeatNeuralNet{Genome: genomeA}},
 				},
 			},
 		},

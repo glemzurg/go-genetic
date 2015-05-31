@@ -24,10 +24,10 @@ func NewPopulation(config PopulationConfig) Population {
 	return Population{config: config}
 }
 
-// AddCppn adds a single member of the population, putting it into the appropriate species.
-func (p *Population) AddCppn(cppn NeatCppn, score float64, bonus float64, outcomes []float64) {
-	// Wrap this cppn as a specimen.
-	var specimen Specimen = newSpecimen(cppn, score, bonus, outcomes)
+// AddNeuralNet adds a single member of the population, putting it into the appropriate species.
+func (p *Population) AddNeuralNet(neuralNet NeatNeuralNet, score float64, bonus float64, outcomes []float64) {
+	// Wrap this neural net as a specimen.
+	var specimen Specimen = newSpecimen(neuralNet, score, bonus, outcomes)
 	p.AddSpecimen(specimen)
 }
 
@@ -152,18 +152,18 @@ func (p *Population) DumpSpecimens() []Specimen {
 	return specimens
 }
 
-// DumpSpecimensAsCppns removes all the specimens from the population and returns them, fit for scoring.
-func (p *Population) DumpSpecimensAsCppns() []NeatCppn {
+// DumpSpecimensAsNeuralNets removes all the specimens from the population and returns them, fit for scoring.
+func (p *Population) DumpSpecimensAsNeuralNets() []NeatNeuralNet {
 	// Empty out the species of their specimens, but keep them there, they need to stick around for
 	// recategorization later.
-	var cppns []NeatCppn
+	var neuralNets []NeatNeuralNet
 	for i := range p.species {
 		for _, specimen := range p.species[i].Specimens {
-			cppns = append(cppns, specimen.Cppn)
+			neuralNets = append(neuralNets, specimen.NeuralNet)
 		}
 		p.species[i].Specimens = nil
 	}
-	return cppns
+	return neuralNets
 }
 
 // WeightSpecies weights all the specimen scores by the size of their species.
@@ -206,7 +206,7 @@ func newSpecies(specimen Specimen) Species {
 	return Species{
 		// The species will have the identiy genome of the specimen.
 		// Make a copy of the genes so it is not tethered to the specimen itself.
-		genome:    specimen.Cppn.Genome.Clone(),
+		genome:    specimen.NeuralNet.Genome.Clone(),
 		Specimens: []Specimen{specimen}, // Specimen speciation distance is 0.0 == it is the genome.
 	}
 }
@@ -215,7 +215,7 @@ func newSpecies(specimen Specimen) Species {
 func (s *Species) AddSpecimen(specimen Specimen, config SpeciationConfig) (wasAdded bool) {
 	var isSameSpecies bool
 	var speciationDistance float64
-	if isSameSpecies, speciationDistance = IsSameSpecies(s.genome, specimen.Cppn.Genome, config); isSameSpecies {
+	if isSameSpecies, speciationDistance = IsSameSpecies(s.genome, specimen.NeuralNet.Genome, config); isSameSpecies {
 		// This specimen is a member of this species.
 		// Stamp the speciation distance on them and add them.
 		specimen.speciationDistance = speciationDistance
@@ -266,12 +266,12 @@ func (s *Species) WeightSpecies() {
 
 // Specimen is a single member of a population, scored.
 type Specimen struct {
-	Cppn               NeatCppn  // The CPPN that defines this specimen.
-	Score              float64   // The score of the CPPN for selectors that use it. 0.0 if unused.
-	Bonus              float64   // The bonus for meta-qualiteis (e.g. novelty searches). 0.0 if unused.
-	Outcomes           []float64 // Multi-outcomes for selectors that use it (e.g. hypervolume indicator). null if unused.
-	SpeciesScore       float64   // The final score modified by species weighting factors.
-	speciationDistance float64   // The speciation distance from the species this specimen is in.
+	NeuralNet          NeatNeuralNet // The neural net that defines this specimen.
+	Score              float64       // The score of the neural net for selectors that use it. 0.0 if unused.
+	Bonus              float64       // The bonus for meta-qualiteis (e.g. novelty searches). 0.0 if unused.
+	Outcomes           []float64     // Multi-outcomes for selectors that use it (e.g. hypervolume indicator). null if unused.
+	SpeciesScore       float64       // The final score modified by species weighting factors.
+	speciationDistance float64       // The speciation distance from the species this specimen is in.
 }
 
 // BySpeciesScore implements sort.Interface to sort descending by SpeciesScore.
@@ -283,9 +283,9 @@ func (a BySpeciesScore) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a BySpeciesScore) Less(i, j int) bool { return a[i].SpeciesScore > a[j].SpeciesScore }
 
 // newSpecimen creates a well-formed member of the population.
-func newSpecimen(cppn NeatCppn, score float64, bonus float64, outcomes []float64) Specimen {
+func newSpecimen(neuralNet NeatNeuralNet, score float64, bonus float64, outcomes []float64) Specimen {
 	return Specimen{
-		Cppn:               cppn,
+		NeuralNet:          neuralNet,
 		Score:              score,
 		Bonus:              bonus,
 		Outcomes:           outcomes,
@@ -311,7 +311,7 @@ func (s *Specimen) MateMutate(speciesSpecimens []Specimen, specimenIndex int, co
 	}
 
 	// Pick the type of change we're going to make. Then make it.
-	var newCppn NeatCppn
+	var newNeuralNet NeatNeuralNet
 	var changeType int = randomMateMutatePick(mateWeight, addNodeWeight, addConnectionWeight, alterConnectionWeight)
 	switch changeType {
 
@@ -324,30 +324,30 @@ func (s *Specimen) MateMutate(speciesSpecimens []Specimen, specimenIndex int, co
 			fitterParent = otherParent
 			otherParent = *s // We're the less fit parent.
 		}
-		newCppn = Mate(fitterParent.Cppn, otherParent.Cppn)
+		newNeuralNet = Mate(fitterParent.NeuralNet, otherParent.NeuralNet)
 
 	case _CHANGE_MUTATE_ADD_NODE:
-		newCppn = s.Cppn.Clone()
-		newCppn.MutateAddNode(config.AvailableNodeFunctions)
+		newNeuralNet = s.NeuralNet.Clone()
+		newNeuralNet.MutateAddNode(config.AvailableNodeFunctions)
 
 	case _CHANGE_MUTATE_ADD_CONNECTION:
-		newCppn = s.Cppn.Clone()
+		newNeuralNet = s.NeuralNet.Clone()
 		var added bool
-		if added = newCppn.MutateAddConnection(config.MaxAddConnectionAttempts); !added {
+		if added = newNeuralNet.MutateAddConnection(config.MaxAddConnectionAttempts); !added {
 			// If we didn't succesfully add a connection, fall back to just altering a connection weight.
-			newCppn.MutateChangeConnectionWeight()
+			newNeuralNet.MutateChangeConnectionWeight()
 		}
 
 	case _CHANGE_MUTATE_ALTER_CONNECTION:
-		newCppn = s.Cppn.Clone()
-		newCppn.MutateChangeConnectionWeight()
+		newNeuralNet = s.NeuralNet.Clone()
+		newNeuralNet.MutateChangeConnectionWeight()
 
 	default:
 		log.Panicf("Unknown change type: %d", changeType)
 	}
 
 	// The new member of the population.
-	return newSpecimen(newCppn, 0.0, 0.0, nil) // No scores
+	return newSpecimen(newNeuralNet, 0.0, 0.0, nil) // No scores
 }
 
 // randomMateMutatePick randomly selects the kind of change we want to make to create a new member of the population.
