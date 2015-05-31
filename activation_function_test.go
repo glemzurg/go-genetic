@@ -116,5 +116,5 @@ func (s *ActivationFunctionSuite) Test_Activate(c *C) {
 	c.Check(activate(ACTIVATION_SPIKE, 100000000000.5), Equals, 0.0)
 
 	// Invalid parameters.
-	c.Assert(func() { activate("BOOGA", 0.0) }, PanicMatches, `Unknown activation function: 'BOOGA'`)
+	c.Assert(func() { activate("BOOGA", 0.0) }, Panics, `Unknown activation function: 'BOOGA'`)
 }

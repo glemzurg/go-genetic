@@ -40,7 +40,7 @@ func NewNeatCppn(inOut CppnInOut) (cppn NeatCppn) {
 
 		// Make the connection. Should always work.
 		if ok = cppn.addConnection(in, out, weight); !ok {
-			panic(fmt.Errorf("Failed to create connection from '%s' to '%s' when creating a new NeatCppn", in, out))
+			panic(fmt.Sprintf("Failed to create connection from '%s' to '%s' when creating a new NeatCppn", in, out))
 		}
 	}
 
@@ -76,17 +76,17 @@ func (c *NeatCppn) addConnection(from string, to string, weight float64) (wasAdd
 
 	// Connections cannot be made to bias.
 	if to == NODE_BIAS {
-		panic(fmt.Errorf("Cannot use bias as sink: '%s'", to))
+		panic(fmt.Sprintf("Cannot use bias as sink: '%s'", to))
 	}
 
 	// Connections cannot be made to inputs.
 	if inStrings(c.InOut.Inputs, to) {
-		panic(fmt.Errorf("Cannot use input as sink: '%s'", to))
+		panic(fmt.Sprintf("Cannot use input as sink: '%s'", to))
 	}
 
 	// Connections cannot be made from outputs.
 	if inStrings(c.InOut.Outputs, from) {
-		panic(fmt.Errorf("Cannot use output as source: '%s'", from))
+		panic(fmt.Sprintf("Cannot use output as source: '%s'", from))
 	}
 
 	// Start with a gene with no id (we don't want to use an id until we know this gene is valid).
@@ -139,7 +139,7 @@ func (c *NeatCppn) addNode(connectionGeneIndex int, function string) {
 
 	// Only connection genees can be split.
 	if c.Genome.Genes[connectionGeneIndex].Type != _GENE_TYPE_CONNECTION {
-		panic(fmt.Errorf("Only genes of type '%s' can have nodes added, not type: '%s'", _GENE_TYPE_CONNECTION, c.Genome.Genes[connectionGeneIndex].Type))
+		panic(fmt.Sprintf("Only genes of type '%s' can have nodes added, not type: '%s'", _GENE_TYPE_CONNECTION, c.Genome.Genes[connectionGeneIndex].Type))
 	}
 
 	// Disable the original node.
@@ -198,7 +198,7 @@ func (c *NeatCppn) MutateAddConnection(maxAttempts int) (wasAdded bool) {
 
 	// If we don't know how long we can go, report an issue.
 	if maxAttempts < 1 {
-		panic(fmt.Errorf("Must have a 1 or more max attempts to mutate add connection, not: %d", maxAttempts))
+		panic(fmt.Sprintf("Must have a 1 or more max attempts to mutate add connection, not: %d", maxAttempts))
 	}
 
 	// What are all the hidden nodes?
@@ -281,10 +281,10 @@ func Mate(fitterParent NeatCppn, otherParent NeatCppn) (child NeatCppn) {
 
 	// The genomes should be always sorted ascending by gene id but do a sanity check.
 	if !sort.IsSorted(ByGeneId(fitterGenes)) {
-		panic(fmt.Errorf("genome not sorted correctly by gene id: %+v", fitterGenes))
+		panic(fmt.Sprintf("genome not sorted correctly by gene id: %+v", fitterGenes))
 	}
 	if !sort.IsSorted(ByGeneId(otherGenes)) {
-		panic(fmt.Errorf("genome not sorted correctly by gene id: %+v", otherGenes))
+		panic(fmt.Sprintf("genome not sorted correctly by gene id: %+v", otherGenes))
 	}
 
 	// The gene structure and hidden nodes come from the fitter parent. Create them in the child now.
@@ -349,7 +349,7 @@ func (c *NeatCppn) PrepareComputeTopology() {
 	if c.topology, ok = makeComputeTopology(c.InOut, c.Genome.Genes); !ok {
 		// Somehow we ended up with a circular dependency in our genome.
 		// Should never happen.
-		panic(fmt.Errorf("CPPN has a circular dependency in Genome: %+v", c.Genome.Genes))
+		panic(fmt.Sprintf("CPPN has a circular dependency in Genome: %+v", c.Genome.Genes))
 	}
 }
 
@@ -373,7 +373,7 @@ func (c *NeatCppn) Compute(inputs map[string]float64) (outputs map[string]float6
 		// Did we pass in this input?
 		var value float64
 		if value, ok = inputs[in]; !ok {
-			panic(fmt.Errorf("Missing input: '%s'", in))
+			panic(fmt.Sprintf("Missing input: '%s'", in))
 		}
 		nodeValues[in] = value
 		sinkTally[in] = 0 // Inputs will never have other nodes use them as a sink.
@@ -383,7 +383,7 @@ func (c *NeatCppn) Compute(inputs map[string]float64) (outputs map[string]float6
 	// Sanity check we didn't pass in any invalid inputs.
 	for in, _ := range inputs {
 		if _, ok = nodeValues[in]; !ok {
-			panic(fmt.Errorf("Unknown input: '%s'", in))
+			panic(fmt.Sprintf("Unknown input: '%s'", in))
 		}
 	}
 
@@ -399,7 +399,7 @@ func (c *NeatCppn) Compute(inputs map[string]float64) (outputs map[string]float6
 
 		// Verify we have the correct number of sinks to this node.
 		if sinkTally[nodeId] != node.inputCount {
-			panic(fmt.Errorf("Incorrect sink count: expected %d but found %d", node.inputCount, sinkTally[nodeId]))
+			panic(fmt.Sprintf("Incorrect sink count: expected %d but found %d", node.inputCount, sinkTally[nodeId]))
 		}
 
 		// This node has the value of all source nodes using it as a sink.
@@ -437,7 +437,7 @@ func (c *NeatCppn) Compute(inputs map[string]float64) (outputs map[string]float6
 		// Did we calcualte in this output? All should be calculated.
 		var value float64
 		if value, ok = nodeValues[out]; !ok {
-			panic(fmt.Errorf("Failed to calculate output: '%s'", out))
+			panic(fmt.Sprintf("Failed to calculate output: '%s'", out))
 		}
 		outputs[out] = value
 	}

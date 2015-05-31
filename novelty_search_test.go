@@ -92,7 +92,7 @@ func (s *NoveltySearchSuite) Test_NoveltySearchTally(c *C) {
 	}
 
 	// Invalid parameters.
-	c.Assert(func() { NewNoveltySearchTally(0) }, PanicMatches, `NovelySearchTally cannot be made with maxFingerprints == 0`)
+	c.Assert(func() { NewNoveltySearchTally(0) }, Panics, `NovelySearchTally cannot be made with maxFingerprints == 0`)
 
 }
 

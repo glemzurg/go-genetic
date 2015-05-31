@@ -28,7 +28,7 @@ func (n *topologicalNode) addSink(node string, weight float64) {
 	// Sanity check we are not creating the same connection twice.
 	var ok bool
 	if _, ok = n.sinks[node]; ok {
-		panic(fmt.Errorf("Connection made twice from node '%s' to node: '%s'", n.nodeId, node))
+		panic(fmt.Sprintf("Connection made twice from node '%s' to node: '%s'", n.nodeId, node))
 	}
 	// Indicate what weight the connection has.
 	n.sinks[node] = weight
@@ -74,10 +74,10 @@ func makeComputeTopology(inOut CppnInOut, genes []NeatGene) (compute computeTopo
 
 			// Sanity check the from/to exist.
 			if _, ok = nodeMap[gene.From]; !ok {
-				panic(fmt.Errorf("Unknown from node: '%s'", gene.From))
+				panic(fmt.Sprintf("Unknown from node: '%s'", gene.From))
 			}
 			if _, ok = nodeMap[gene.To]; !ok {
-				panic(fmt.Errorf("Unknown to node: '%s'", gene.To))
+				panic(fmt.Sprintf("Unknown to node: '%s'", gene.To))
 			}
 
 			// Add the connection to the source.
@@ -91,7 +91,7 @@ func makeComputeTopology(inOut CppnInOut, genes []NeatGene) (compute computeTopo
 	// Verify that each output has sources feeding it a value. To compute, each output must be defined.
 	for _, out := range inOut.Outputs {
 		if nodeMap[out].inputCount == 0 {
-			panic(fmt.Errorf("CPPN output '%s' has no values feeding it.", out))
+			panic(fmt.Sprintf("CPPN output '%s' has no values feeding it.", out))
 		}
 	}
 

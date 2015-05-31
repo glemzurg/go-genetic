@@ -52,7 +52,7 @@ func activate(function string, input float64) (output float64) {
 	case ACTIVATION_SPIKE:
 		output = activationSpike(input)
 	default:
-		panic(fmt.Errorf("Unknown activation function: '%s'", function))
+		panic(fmt.Sprintf("Unknown activation function: '%s'", function))
 	}
 	return
 }

@@ -79,15 +79,15 @@ func (s *NeatCppnSuite) Test_NeatCppn_AddConnection(c *C) {
 	c.Check(_maxGeneId, Equals, uint64(2)) // GeneId not incremented.
 
 	// Attempt to add a connection with a input as the sink.
-	c.Assert(func() { cppn.addConnection("i1", "i2", 0.88888) }, PanicMatches, `Cannot use input as sink: 'i2'`)
+	c.Assert(func() { cppn.addConnection("i1", "i2", 0.88888) }, Panics, `Cannot use input as sink: 'i2'`)
 	c.Check(_maxGeneId, Equals, uint64(2)) // GeneId not incremented.
 
 	// Attempt to add a connection with a input as the sink.
-	c.Assert(func() { cppn.addConnection("i1", "b", 0.88888) }, PanicMatches, `Cannot use bias as sink: 'b'`)
+	c.Assert(func() { cppn.addConnection("i1", "b", 0.88888) }, Panics, `Cannot use bias as sink: 'b'`)
 	c.Check(_maxGeneId, Equals, uint64(2)) // GeneId not incremented.
 
 	// Attempt to add a connection with an output as the source.
-	c.Assert(func() { cppn.addConnection("o1", "o2", 0.88888) }, PanicMatches, `Cannot use output as source: 'o1'`)
+	c.Assert(func() { cppn.addConnection("o1", "o2", 0.88888) }, Panics, `Cannot use output as source: 'o1'`)
 	c.Check(_maxGeneId, Equals, uint64(2)) // GeneId not incremented.
 }
 
@@ -137,8 +137,8 @@ func (s *NeatCppnSuite) Test_NeatCppn_AddConnection_HiddenNodes(c *C) {
 	c.Assert(_maxGeneId, Equals, uint64(9))     // GeneId not incremented.
 
 	// Unknown nodes.
-	c.Assert(func() { cppn.addConnection("unknown", "3", 0.88888) }, PanicMatches, `Unknown from node: 'unknown'`)
-	c.Assert(func() { cppn.addConnection("3", "unknown", 0.88888) }, PanicMatches, `Unknown to node: 'unknown'`)
+	c.Assert(func() { cppn.addConnection("unknown", "3", 0.88888) }, Panics, `Unknown from node: 'unknown'`)
+	c.Assert(func() { cppn.addConnection("3", "unknown", 0.88888) }, Panics, `Unknown to node: 'unknown'`)
 	c.Assert(_maxGeneId, Equals, uint64(9)) // GeneId not incremented.
 
 	// Make some valid connection to hidden nodes.
@@ -216,7 +216,7 @@ func (s *NeatCppnSuite) Test_NeatCppn_AddNode(c *C) {
 	// Add a node to the second gene.
 	setMaxGeneId(345)
 	c.Assert(_maxGeneId, Equals, uint64(345))
-	c.Check(func() { cppn.addNode(1, ACTIVATION_SIGMOID) }, PanicMatches, `Disabled genes cannot be split with a new node.`)
+	c.Check(func() { cppn.addNode(1, ACTIVATION_SIGMOID) }, Panics, `Disabled genes cannot be split with a new node.`)
 
 	// Make a new CPPN (avoiding randomness).
 	cppn = NeatCppn{
@@ -263,7 +263,7 @@ func (s *NeatCppnSuite) Test_NeatCppn_AddNode(c *C) {
 	// Add a node to the forth gene.
 	setMaxGeneId(345)
 	c.Assert(_maxGeneId, Equals, uint64(345))
-	c.Check(func() { cppn.addNode(3, ACTIVATION_SIGMOID) }, PanicMatches, `Only genes of type 'connection' can have nodes added, not type: 'SOMETHING_ELSE'`)
+	c.Check(func() { cppn.addNode(3, ACTIVATION_SIGMOID) }, Panics, `Only genes of type 'connection' can have nodes added, not type: 'SOMETHING_ELSE'`)
 }
 
 func (s *NeatCppnSuite) Test_NeatCppn_MutateAddNode(c *C) {
@@ -312,8 +312,8 @@ func (s *NeatCppnSuite) Test_NeatCppn_MutateAddNode_NoActivationFunctions(c *C) 
 	}
 
 	// Invalid parameters.
-	c.Check(func() { cppn.MutateAddNode(nil) }, PanicMatches, `Available functions must be defined to mutetate add node.`)
-	c.Check(func() { cppn.MutateAddNode([]string{}) }, PanicMatches, `Available functions must be defined to mutetate add node.`)
+	c.Check(func() { cppn.MutateAddNode(nil) }, Panics, `Available functions must be defined to mutetate add node.`)
+	c.Check(func() { cppn.MutateAddNode([]string{}) }, Panics, `Available functions must be defined to mutetate add node.`)
 }
 
 func (s *NeatCppnSuite) Test_NeatCppn_MutateAddConnection(c *C) {
@@ -395,8 +395,8 @@ func (s *NeatCppnSuite) Test_NeatCppn_MutateAddConnection_NoMaxAttempts(c *C) {
 	}
 
 	// Invalid parameters.
-	c.Check(func() { cppn.MutateAddConnection(0) }, PanicMatches, `Must have a 1 or more max attempts to mutate add connection, not: 0`)
-	c.Check(func() { cppn.MutateAddConnection(-1) }, PanicMatches, `Must have a 1 or more max attempts to mutate add connection, not: -1`)
+	c.Check(func() { cppn.MutateAddConnection(0) }, Panics, `Must have a 1 or more max attempts to mutate add connection, not: 0`)
+	c.Check(func() { cppn.MutateAddConnection(-1) }, Panics, `Must have a 1 or more max attempts to mutate add connection, not: -1`)
 }
 
 func (s *NeatCppnSuite) Test_Mate(c *C) {
@@ -449,8 +449,6 @@ func (s *NeatCppnSuite) Test_Mate(c *C) {
 
 func (s *NeatCppnSuite) Test_Mate_UnorderedGenes(c *C) {
 
-	c.Skip("This test has been verified but is the Check library doesn't like comparing the contents of panic string so should be manually reviewed.")
-
 	// Make a CPPN with properly ordered genes.
 	var orderedCppn NeatCppn = NeatCppn{
 		InOut: CppnInOut{
@@ -476,8 +474,8 @@ func (s *NeatCppnSuite) Test_Mate_UnorderedGenes(c *C) {
 	}
 
 	// Invalid parameters.
-	c.Check(func() { Mate(orderedCppn, unorderedCppn) }, PanicMatches, `genome not sorted correctly by gene id: [{GeneId:2 IsEnabled:false Type:connection From:i2 To:o2 Weight:1.2 Function:} {GeneId:1 IsEnabled:true Type:connection From:i1 To:o1 Weight:1.1 Function:}]`)
-	c.Check(func() { Mate(unorderedCppn, orderedCppn) }, PanicMatches, `genome not sorted correctly by gene id: [{GeneId:2 IsEnabled:false Type:connection From:i2 To:o2 Weight:1.2 Function:} {GeneId:1 IsEnabled:true Type:connection From:i1 To:o1 Weight:1.1 Function:}]`)
+	c.Check(func() { Mate(orderedCppn, unorderedCppn) }, Panics, `genome not sorted correctly by gene id: [{GeneId:2 IsEnabled:false Type:connection From:i2 To:o2 Weight:1.2 Function:} {GeneId:1 IsEnabled:true Type:connection From:i1 To:o1 Weight:1.1 Function:}]`)
+	c.Check(func() { Mate(unorderedCppn, orderedCppn) }, Panics, `genome not sorted correctly by gene id: [{GeneId:2 IsEnabled:false Type:connection From:i2 To:o2 Weight:1.2 Function:} {GeneId:1 IsEnabled:true Type:connection From:i1 To:o1 Weight:1.1 Function:}]`)
 }
 
 func (s *NeatCppnSuite) Test_NeatCppn_RandomizedClone(c *C) {
@@ -560,15 +558,13 @@ func (s *NeatCppnSuite) Test_NeatCppn_Compute(c *C) {
 	c.Assert(int64(outputs["o2"]*10000.0), Equals, int64(expectedOutputs["o2"]*10000.0)) // Round with typecast.
 
 	// Attempt to compute missing an input.
-	c.Check(func() { cppn.Compute(map[string]float64{"i1": 10.0}) }, PanicMatches, `Missing input: 'i2'`)
+	c.Check(func() { cppn.Compute(map[string]float64{"i1": 10.0}) }, Panics, `Missing input: 'i2'`)
 
 	// Attempt to compute with unknown input.
-	c.Check(func() { cppn.Compute(map[string]float64{"i1": 10.0, "i2": 100.0, "i3": 100.0}) }, PanicMatches, `Unknown input: 'i3'`)
+	c.Check(func() { cppn.Compute(map[string]float64{"i1": 10.0, "i2": 100.0, "i3": 100.0}) }, Panics, `Unknown input: 'i3'`)
 }
 
 func (s *NeatCppnSuite) Test_NeatCppn_PrepareComputeTopology_CircularDependency(c *C) {
-
-	c.Skip("This test has been verified but is the Check library doesn't like comparing the contents of panic string so should be manually reviewed.")
 
 	// Make a new CPPN (avoiding randomness).
 	var cppn NeatCppn = NeatCppn{
@@ -588,5 +584,5 @@ func (s *NeatCppnSuite) Test_NeatCppn_PrepareComputeTopology_CircularDependency(
 	}
 
 	//  Attempting to compute before preparing compute topology will fail.
-	c.Check(func() { cppn.PrepareComputeTopology() }, PanicMatches, `CPPN has a circular dependency in Genome: [{GeneId:1 IsEnabled:true Type:connection From:i1 To:o1 Weight:0.1 Function:} {GeneId:2 IsEnabled:true Type:node From: To: Weight:0 Function:inverse} {GeneId:3 IsEnabled:true Type:connection From:i2 To:2 Weight:0.25 Function:} {GeneId:4 IsEnabled:true Type:connection From:2 To:o1 Weight:0.4 Function:} {GeneId:5 IsEnabled:true Type:connection From:b To:2 Weight:0.5 Function:} {GeneId:6 IsEnabled:true Type:connection From:b To:o2 Weight:0.5 Function:} {GeneId:7 IsEnabled:true Type:connection From:2 To:2 Weight:0.5 Function:}]`)
+	c.Check(func() { cppn.PrepareComputeTopology() }, Panics, `CPPN has a circular dependency in Genome: [{GeneId:1 IsEnabled:true Type:connection From:i1 To:o1 Weight:0.1 Function:} {GeneId:2 IsEnabled:true Type:node From: To: Weight:0 Function:inverse} {GeneId:3 IsEnabled:true Type:connection From:i2 To:2 Weight:0.25 Function:} {GeneId:4 IsEnabled:true Type:connection From:2 To:o1 Weight:0.4 Function:} {GeneId:5 IsEnabled:true Type:connection From:b To:2 Weight:0.5 Function:} {GeneId:6 IsEnabled:true Type:connection From:b To:o2 Weight:0.5 Function:} {GeneId:7 IsEnabled:true Type:connection From:2 To:2 Weight:0.5 Function:}]`)
 }

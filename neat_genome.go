@@ -117,7 +117,7 @@ func SpeciationDistance(genomeA NeatGenome, genomeB NeatGenome, c1 float64, c2 f
 	// Sanity check.
 	geneCountAfter = len(prunedYoungerGenes) + excessGeneCount
 	if geneCountBefore != geneCountAfter {
-		panic(fmt.Errorf("sanity check failed: %d != %d", geneCountBefore, geneCountAfter))
+		panic(fmt.Sprintf("sanity check failed: %d != %d", geneCountBefore, geneCountAfter))
 	}
 
 	// Sanity check.
@@ -164,7 +164,7 @@ func SpeciationDistance(genomeA NeatGenome, genomeB NeatGenome, c1 float64, c2 f
 	// Sanity check.
 	geneCountAfter = disjointGeneCount + 2*weightContributors
 	if geneCountBefore != geneCountAfter {
-		panic(fmt.Errorf("sanity check failed: %d != %d", geneCountBefore, geneCountAfter))
+		panic(fmt.Sprintf("sanity check failed: %d != %d", geneCountBefore, geneCountAfter))
 	}
 
 	// Calculate the numbers-of-interest for the equation.

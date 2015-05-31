@@ -42,16 +42,16 @@ func (i *CppnInOut) validate() {
 	// Inputs and output cannot share any names.
 	for _, in := range i.Inputs {
 		if inStrings(i.Outputs, in) {
-			panic(fmt.Errorf("CppnInOut has both input and output named '%s'", in))
+			panic(fmt.Sprintf("CppnInOut has both input and output named '%s'", in))
 		}
 	}
 
 	// Neither inputs or outputs can be named "b", which is the name of the bias.
 	if inStrings(i.Inputs, NODE_BIAS) {
-		panic(fmt.Errorf("CppnInOut has input named same as the bias '%s'", NODE_BIAS))
+		panic(fmt.Sprintf("CppnInOut has input named same as the bias '%s'", NODE_BIAS))
 	}
 	if inStrings(i.Outputs, NODE_BIAS) {
-		panic(fmt.Errorf("CppnInOut has output named same as the bias '%s'", NODE_BIAS))
+		panic(fmt.Sprintf("CppnInOut has output named same as the bias '%s'", NODE_BIAS))
 	}
 
 	// None of the inputs cannot be named as numbers. Those are reserved for hidden nodes named for their geneId.
@@ -60,7 +60,7 @@ func (i *CppnInOut) validate() {
 		_, err = strconv.ParseUint(in, _BASE_10, _BIT_SIZE_64)
 		// There is only a problem if we did NOT get an error. We successfully parsed the string to an integer which is bad.
 		if err == nil {
-			panic(fmt.Errorf("CppnInOut has input named as a number '%s'. Used for hidden nodes.", in))
+			panic(fmt.Sprintf("CppnInOut has input named as a number '%s'. Used for hidden nodes.", in))
 		}
 	}
 
@@ -70,7 +70,7 @@ func (i *CppnInOut) validate() {
 		_, err = strconv.ParseUint(out, _BASE_10, _BIT_SIZE_64)
 		// There is only a problem if we did NOT get an error. We successfully parsed the string to an integer which is bad.
 		if err == nil {
-			panic(fmt.Errorf("CppnInOut has output named as a number '%s'. Used for hidden nodes.", out))
+			panic(fmt.Sprintf("CppnInOut has output named as a number '%s'. Used for hidden nodes.", out))
 		}
 	}
 }

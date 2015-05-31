@@ -150,7 +150,7 @@ func (s *ComputeTopologySuite) Test_MakeComputeTopology_ConnectionMadeTwice(c *C
 		NeatGene{GeneId: 9, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "1", To: "2", Weight: 0.6}, // Duplicate connection.
 	}
 
-	c.Assert(func() { makeComputeTopology(inOut, genes) }, PanicMatches, `Connection made twice from node '1' to node: '2'`)
+	c.Assert(func() { makeComputeTopology(inOut, genes) }, Panics, `Connection made twice from node '1' to node: '2'`)
 }
 
 func (s *ComputeTopologySuite) Test_MakeComputeTopology_UnknownSourceNode(c *C) {
@@ -174,7 +174,7 @@ func (s *ComputeTopologySuite) Test_MakeComputeTopology_UnknownSourceNode(c *C) 
 		NeatGene{GeneId: 9, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "unknown", To: "2", Weight: 0.6}, // Unknown source node.
 	}
 
-	c.Assert(func() { makeComputeTopology(inOut, genes) }, PanicMatches, `Unknown from node: 'unknown'`)
+	c.Assert(func() { makeComputeTopology(inOut, genes) }, Panics, `Unknown from node: 'unknown'`)
 }
 
 func (s *ComputeTopologySuite) Test_MakeComputeTopology_UnknownSinkNode(c *C) {
@@ -198,7 +198,7 @@ func (s *ComputeTopologySuite) Test_MakeComputeTopology_UnknownSinkNode(c *C) {
 		NeatGene{GeneId: 9, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "2", To: "unknown", Weight: 0.6}, // Unknown source node.
 	}
 
-	c.Assert(func() { makeComputeTopology(inOut, genes) }, PanicMatches, `Unknown to node: 'unknown'`)
+	c.Assert(func() { makeComputeTopology(inOut, genes) }, Panics, `Unknown to node: 'unknown'`)
 }
 
 func (s *ComputeTopologySuite) Test_MakeComputeTopology_UnfedOutput(c *C) {
@@ -221,7 +221,7 @@ func (s *ComputeTopologySuite) Test_MakeComputeTopology_UnfedOutput(c *C) {
 		NeatGene{GeneId: 8, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "3", To: "o1", Weight: 0.5},
 	}
 
-	c.Assert(func() { makeComputeTopology(inOut, genes) }, PanicMatches, `CPPN output 'o2' has no values feeding it.`)
+	c.Assert(func() { makeComputeTopology(inOut, genes) }, Panics, `CPPN output 'o2' has no values feeding it.`)
 }
 
 func (s *ComputeTopologySuite) Test_MakeComputeTopology_CircularDependencyA(c *C) {
