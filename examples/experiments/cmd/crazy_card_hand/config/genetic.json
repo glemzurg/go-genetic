@@ -1,9 +1,9 @@
 {
-  "NeuralNetInOut": {"Inputs": ["Suit", "Face", "Value"], "Outputs": ["Priority"]},
+  "NeuralNetInOut": {"Inputs": ["CardId", "Suit", "Face", "Value"], "Outputs": ["Priority"]},
   "Population": {
-    "PopulationSize": 5,
+    "PopulationSize": 100,
     "Speciation": {
-      "Threshold": 1.0,
+      "Threshold": 0.25,
       "C1": 1.0,
       "C2": 1.0,
       "C3": 1.0
@@ -19,7 +19,7 @@
   },
   "EndCondition": {
     "GenerationNum": 0,
-    "TargetScore": 0,
+    "TargetScore": 250,
     "StagnantGenerationCount": 0
   },
   "Database": {

@@ -1,4 +1,6 @@
 {
-  "DeckSize": 40,
-	"MaxNoveltyFingerprints": 1000
+  "DeckCount": 2,
+  "JokersPerDeck": 1,
+  "WinningHand": ["2", "king", "joker", "7", "4", "2"],
+  "MaxNoveltyFingerprints": 1000
 }

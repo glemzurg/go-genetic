@@ -218,7 +218,7 @@ func (s *Species) AddSpecimen(specimen Specimen, config SpeciationConfig) (wasAd
 	if isSameSpecies, speciationDistance = IsSameSpecies(s.genome, specimen.NeuralNet.Genome, config); isSameSpecies {
 		// This specimen is a member of this species.
 		// Stamp the speciation distance on them and add them.
-		specimen.speciationDistance = speciationDistance
+		specimen.SpeciationDistance = speciationDistance
 		s.Specimens = append(s.Specimens, specimen)
 	}
 	return isSameSpecies
@@ -271,7 +271,7 @@ type Specimen struct {
 	Bonus              float64       // The bonus for meta-qualiteis (e.g. novelty searches). 0.0 if unused.
 	Outcomes           []float64     // Multi-outcomes for selectors that use it (e.g. hypervolume indicator). null if unused.
 	SpeciesScore       float64       // The final score modified by species weighting factors.
-	speciationDistance float64       // The speciation distance from the species this specimen is in.
+	SpeciationDistance float64       // The speciation distance from the species this specimen is in.
 }
 
 // BySpeciesScore implements sort.Interface to sort descending by SpeciesScore.
@@ -289,7 +289,7 @@ func newSpecimen(neuralNet NeatNeuralNet, score float64, bonus float64, outcomes
 		Score:              score,
 		Bonus:              bonus,
 		Outcomes:           outcomes,
-		speciationDistance: 0.0, // Not calculated yet.
+		SpeciationDistance: 0.0, // Not calculated yet.
 		SpeciesScore:       0.0, // Not calculated yet.
 	}
 }
