@@ -2,7 +2,6 @@ package genetic
 
 import (
 	. "gopkg.in/check.v1" // https://labix.org/gocheck
-	"sort"
 )
 
 // Create a suite.
@@ -26,7 +25,7 @@ func (s *HypervolumeIndicatorSuite) Test_HypervolumeIndicator(c *C) {
 	// 	hypercubeDimension{first: -5.0, second: -5.0, base: -5.0, isMaximize: true, weight: 1.0},
 	// }
 	// c.Assert(hypercube, DeepEquals, expectedHypercube)
-	// 
+	//
 	// // Stretch all dimensions.
 	// expectedHypercube = []hypercubeDimension{
 	// 	hypercubeDimension{first: -4.0, second: -5.0, base: -5.0, isMaximize: true, weight: 1.0},
@@ -35,7 +34,7 @@ func (s *HypervolumeIndicatorSuite) Test_HypervolumeIndicator(c *C) {
 	// }
 	// hypercube = stretchDimensions(hypercube, []float64{-4.0, 4.0, -3.0})
 	// c.Assert(hypercube, DeepEquals, expectedHypercube)
-	// 
+	//
 	// // Stretch all dimensions.
 	// expectedHypercube = []hypercubeDimension{
 	// 	hypercubeDimension{first: 100.0, second: -4.0, base: -5.0, isMaximize: true, weight: 1.0},
@@ -44,9 +43,8 @@ func (s *HypervolumeIndicatorSuite) Test_HypervolumeIndicator(c *C) {
 	// }
 	// hypercube = stretchDimensions(hypercube, []float64{100.0, -100.0, 99.0})
 	// c.Assert(hypercube, DeepEquals, expectedHypercube)
-	// 
+	//
 	// // Invalid parameters.
 	// c.Assert(func() { stretchDimensions(hypercube, []float64{100.0, -100.0}) }, Panics, `stretchDimensions expects 3 dimensions, but outcomes have 2 dimensions`)
 
 }
-
