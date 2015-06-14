@@ -116,6 +116,17 @@ func newHypercubeKdTreeNode(hypercubes []*specimenHypercube, dimensions int, dep
 	return node
 }
 
+// calculateHypervolumeIndicator searches this node and its children for hypercubes that would increase the size of the hypervolume indicator's base.
+// the final hypervolume indicator will be the volume of the hypercube created by the source hypercube's defining point in one corner and the indicator's
+// base in the opposite corner. As we discover hypercubes that overlap our current indicator, we move the indicator base "higher", closer to the defining
+// point, and so shrink the eventual hypervolume indicator.
+// func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *specimenHypercube, indicatorBase []float64) []float64 {
+//
+// 	// First, just check for simple domination.
+// 	// Is every point
+//
+// }
+
 // byDimensionHypercubeSort implements sort.Interface to sort hypercubes ascending by a particular dimension.
 type byDimensionHypercubeSort struct {
 	dimension  int                  // What dimension are we sorting on?

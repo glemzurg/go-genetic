@@ -35,6 +35,17 @@ func newSpecimenHypercube(specimen Specimen, referencePoint []float64, isMaximiz
 	}
 }
 
+// isDominatedBy lets use know if this hypercube wholely exists inside another hypercube of the population.
+func (h *specimenHypercube) isDominatedBy(other *specimenHypercube) bool {
+	// If any of our dimensions are greater than the other's, we are *not* dominated.
+	for i := range h.dimensions {
+		if h.dimensions[i] > other.dimensions[i] {
+			return false
+		}
+	}
+	return true
+}
+
 // specimenHypercubeDimensions calculates the normalized hypercube.
 func specimenHypercubeDimensions(outcomes []float64, referencePoint []float64, isMaximize []bool, weights []float64) (dimensions []float64, volume float64) {
 
