@@ -2,6 +2,7 @@ package genetic
 
 import (
 	. "gopkg.in/check.v1" // https://labix.org/gocheck
+	"sort"
 )
 
 // Create a suite.
@@ -178,7 +179,7 @@ func (s *HypervolumeIndicatorSuite) Test_NewHypercubeContribution(c *C) {
 
 	// A specimen that has two members in its species.
 	var specimen Specimen = Specimen{
-		speciesMemberCount: 2, // Two members in the species.
+		SpeciesMemberCount: 2, // Two members in the species.
 		Outcomes:           []float64{5.0, 5.0, 5.0},
 	}
 
@@ -192,5 +193,26 @@ func (s *HypervolumeIndicatorSuite) Test_NewHypercubeContribution(c *C) {
 	}
 
 	// Now examine the point that defines the hypervolume. It dominates every other point.
-	c.Assert(newHypercubeContribution(hypercube, specimen), Equals, expectedContribution)
+	c.Assert(newHypercubeContribution(hypercube, specimen), DeepEquals, expectedContribution)
+}
+
+func (s *HypervolumeIndicatorSuite) Test_HypercubeContribution_Sort(c *C) {
+
+	// Unsorted.
+	var contributions []hypercubeContribution = []hypercubeContribution{
+		hypercubeContribution{weightedIndicator: 10.0, weightedVolume: 400.0},
+		hypercubeContribution{weightedIndicator: 10.0, weightedVolume: 500.0},
+		hypercubeContribution{weightedIndicator: 11.0, weightedVolume: 400.0},
+	}
+
+	// Sort.
+	sort.Sort(byHypervolumeIndicator(contributions))
+
+	// Expected sorted.
+	var expectedContributions []hypercubeContribution = []hypercubeContribution{
+		hypercubeContribution{weightedIndicator: 11.0, weightedVolume: 400.0},
+		hypercubeContribution{weightedIndicator: 10.0, weightedVolume: 500.0},
+		hypercubeContribution{weightedIndicator: 10.0, weightedVolume: 400.0},
+	}
+	c.Assert(contributions, DeepEquals, expectedContributions)
 }

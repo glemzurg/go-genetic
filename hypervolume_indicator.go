@@ -4,6 +4,7 @@ import (
 	// "encoding/json"
 	// "io/ioutil"
 	"log"
+	"sort"
 )
 
 // HypervolumeIndicator evaluates multi-outcome scores and scores each on how much it stretches
@@ -68,12 +69,12 @@ type hypercubeContribution struct {
 }
 
 // ByHypervolumeIndicator implements sort.Interface to sort descending by hypervolume indicator.
-// Example: sort.Sort(BySpeciesScore(contributions))
-type ByHypervolumeIndicator []hypercubeContribution
+// Example: sort.Sort(byHypervolumeIndicator(contributions))
+type byHypervolumeIndicator []hypercubeContribution
 
-func (a ByHypervolumeIndicator) Len() int      { return len(a) }
-func (a ByHypervolumeIndicator) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-func (a ByHypervolumeIndicator) Less(i, j int) bool {
+func (a byHypervolumeIndicator) Len() int      { return len(a) }
+func (a byHypervolumeIndicator) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a byHypervolumeIndicator) Less(i, j int) bool {
 	// If both contributions have the same indicator then use specimen volume instead.
 	if a[i].weightedIndicator == a[j].weightedIndicator {
 		return a[i].weightedVolume > a[j].weightedVolume
@@ -90,8 +91,8 @@ func newHypercubeContribution(hypercube []hypercubeDimension, specimen Specimen)
 	return hypercubeContribution{
 		indicator:         indicator,
 		volume:            volume,
-		weightedIndicator: indicator / float64(specimen.speciesMemberCount),
-		weightedVolume:    volume / float64(specimen.speciesMemberCount),
+		weightedIndicator: indicator / float64(specimen.SpeciesMemberCount),
+		weightedVolume:    volume / float64(specimen.SpeciesMemberCount),
 		specimen:          specimen,
 	}
 }
@@ -128,8 +129,17 @@ func (s *HypervolumeIndicatorContextScorer) MutliOutcomePopulationContextScore(s
 		contributions = append(contributions, newHypercubeContribution(hypercube, specimen))
 	}
 
+	// Sort the specimens descending by their contribution.
+	sort.Sort(byHypervolumeIndicator(contributions))
+
+	// Dump the specimens into their sort.
+	var sortedSpecimens []Specimen
+	for _, contribution := range contributions {
+		sortedSpecimens = append(sortedSpecimens, contribution.specimen)
+	}
+
 	// The specimens are sorted from fittest to least fit.
-	return nil
+	return sortedSpecimens
 }
 
 // stretchDimensions runs all the outcomes from a single specimen through the maxes, stretching each in turn.
