@@ -18,6 +18,7 @@ type HypervolumeIndicatorContextScorer struct {
 type hypercubeDimension struct {
 	first      float64 // The value that most stretches the hypercube volume in this dimension.
 	second     float64 // The value that second most stretches the hypercube volume in this dimension.
+	base       float64 // The reference point's value in this dimension.
 	isMaximize bool    // If true, values subtract the base to determine their contribution. If false, the base subtracts the value to determine the contribution.
 	weight     float64 // How much does this dimension contribute to the final hypervolume indicator score.
 }
@@ -27,6 +28,7 @@ func newHypercubeDimension(base float64, isMaximize bool, weight float64) hyperc
 	return hypercubeDimension{
 		first:      base,       // All values allowed must be on one side of the reference point value.
 		second:     base,       // All values allowed must be on one side of the reference point value.
+		base:       base,       // What is the base value for this dimension?
 		isMaximize: isMaximize, // Determines which side of of the reference point value is valid side.
 		weight:     weight,     // How much does this dimension contribute to the final hypervolume indicator score.
 	}
@@ -53,6 +55,44 @@ func (d *hypercubeDimension) stretch(value float64) {
 		case value < d.second:
 			d.second = value
 		}
+	}
+}
+
+// hypercubeContribution is the contribution of a given specimen to the population's hypercube
+type hypercubeContribution struct {
+	indicator         float64  // The amount by which this specimen stretched the population's hypercube.
+	volume            float64  // The hypercube volume of the specimen itself, some sub-cube withint the population's cube.
+	weightedIndicator float64  // Indicator inversely weighted by number of members of the specimen's species.
+	weightedVolume    float64  // Volume inversely weighted by number of members of the specimen's species.
+	specimen          Specimen // The specimen in question.
+}
+
+// ByHypervolumeIndicator implements sort.Interface to sort descending by hypervolume indicator.
+// Example: sort.Sort(BySpeciesScore(contributions))
+type ByHypervolumeIndicator []hypercubeContribution
+
+func (a ByHypervolumeIndicator) Len() int      { return len(a) }
+func (a ByHypervolumeIndicator) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ByHypervolumeIndicator) Less(i, j int) bool {
+	// If both contributions have the same indicator then use specimen volume instead.
+	if a[i].weightedIndicator == a[j].weightedIndicator {
+		return a[i].weightedVolume > a[j].weightedVolume
+	}
+	// If the indicators are different, use them.
+	return a[i].weightedIndicator > a[j].weightedIndicator
+}
+
+// newHypercubeContribution calculates the contribution a specimen makes to the population's hypercube.
+func newHypercubeContribution(hypercube []hypercubeDimension, specimen Specimen) hypercubeContribution {
+	var indicator float64
+	var volume float64
+	indicator, volume = calculateHypercubeContribution(hypercube, specimen.Outcomes)
+	return hypercubeContribution{
+		indicator:         indicator,
+		volume:            volume,
+		weightedIndicator: indicator / float64(specimen.speciesMemberCount),
+		weightedVolume:    volume / float64(specimen.speciesMemberCount),
+		specimen:          specimen,
 	}
 }
 
@@ -83,9 +123,10 @@ func (s *HypervolumeIndicatorContextScorer) MutliOutcomePopulationContextScore(s
 
 	// Update the specimen score to be the score calculated by each specimens contribution to the
 	// who population's hypercube.
-	// for _, specimen := range specimens {
-	// 	specimen.Score = hypervolumeIndicatorScore(specimen, hypercube)
-	// }
+	var contributions []hypercubeContribution
+	for _, specimen := range specimens {
+		contributions = append(contributions, newHypercubeContribution(hypercube, specimen))
+	}
 
 	// The specimens are sorted from fittest to least fit.
 	return nil
@@ -103,6 +144,80 @@ func stretchDimensions(hypercube []hypercubeDimension, outcomes []float64) []hyp
 		hypercube[i].stretch(outcomes[i])
 	}
 	return hypercube
+}
+
+// calculateHypercubeContribution determines how a single specimen's multi-outcome compares to
+// the population's hypercube.
+func calculateHypercubeContribution(hypercube []hypercubeDimension, outcomes []float64) (indicator float64, volume float64) {
+	// Build up the indicator and volume one dimension at a time.
+	indicator = 0.0
+	volume = 1.0
+	for i, dimension := range hypercube {
+
+		// What is the outcome for this dimension.
+		var outcome float64 = outcomes[i]
+
+		// What are the lengths that contribute to this dimension.
+		var indicatorLength float64
+		var volumeLength float64
+
+		// Is this dimension counting up or down?
+		if dimension.isMaximize {
+
+			// Is this outcome the defining limit of the hypercube in this dimension?
+			if outcome == dimension.first {
+				// The contribution it makes is the difference to the second highest value.
+				indicatorLength = dimension.first - dimension.second // First value is higher number.
+			}
+
+			// Regardless of the indicator, what is the contribution to the specimen's hypercube volume.
+			if outcome > dimension.base {
+				volumeLength = outcome - dimension.base // Outcome is higher.
+			} else {
+				// If the specimen doesn't pass the referecnce point in this dimension, it has no contribution in *any* dimension.
+				// As in, if we let an invalid dimension have a value of 1.0, it may beat a valid dimension that calculates
+				// to some value below 1.0 and we can't allow that.
+				volumeLength = 0.0
+				log.Printf("WARNING: In dimension %d, specimen has outcome %f which is not greater than reference point value %f. Too many of these and specimens will not be meaningfully sorted.", i, outcome, dimension.base)
+			}
+
+		} else {
+
+			// We are minimizing on this dimension.
+
+			// Is this outcome the defining limit of the hypercube in this dimension?
+			if outcome == dimension.first {
+				// The contribution it makes is the difference to the second highest value.
+				indicatorLength = dimension.second - dimension.first // First value is lower number.
+			}
+
+			// Regardless of the indicator, what is the contribution to the specimen's hypercube volume.
+			if outcome < dimension.base {
+				volumeLength = dimension.base - outcome // base is higher.
+			} else {
+				// If the specimen doesn't pass the referecnce point in this dimension, it has no contribution in *any* dimension.
+				// As in, if we let an invalid dimension have a value of 1.0, it may beat a valid dimension that calculates
+				// to some value below 1.0 and we can't allow that.
+				volumeLength = 0.0
+				log.Printf("WARNING: In dimension %d, specimen has outcome %f which is not less than reference point value %f. Too many of these and specimens will not be meaningfully sorted.", i, outcome, dimension.base)
+			}
+		}
+
+		// Did this dimension contribute to the population's hypercube?
+		if indicatorLength > 0.0 {
+			// If the indicator has no value yet, start it.
+			if indicator == 0.0 {
+				indicator = 1.0 // The indicator is now active.
+			}
+			// Add this contribution.
+			indicator *= indicatorLength * dimension.weight // Some dimensions are more important than others.
+		}
+
+		// Regardless, build the volume information for this hypercube.
+		volume *= volumeLength * dimension.weight // Some dimensions are more important than others.
+	}
+
+	return indicator, volume
 }
 
 // // LoadHypervolumeIndicatorSelectorConfig loads the json filename as a new configuration.

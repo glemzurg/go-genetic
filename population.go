@@ -256,11 +256,12 @@ func (s *Species) pickSpecimen(populationSpecimenIndex int) (specimen Specimen, 
 func (s *Species) WeightSpecies() {
 
 	// How many specimens are there.
-	var specimenCount float64 = float64(len(s.Specimens))
+	var specimenCount int = len(s.Specimens)
 	for i := range s.Specimens {
 		// The more specimens in the species, the lower the score. Keeps one species from
 		// taking over the whole population.
-		s.Specimens[i].SpeciesScore = (s.Specimens[i].Score + s.Specimens[i].Bonus) / specimenCount
+		s.Specimens[i].SpeciesScore = (s.Specimens[i].Score + s.Specimens[i].Bonus) / float64(specimenCount)
+		s.Specimens[i].speciesMemberCount = specimenCount
 	}
 }
 
@@ -272,6 +273,7 @@ type Specimen struct {
 	Outcomes           []float64     // Multi-outcomes for selectors that use it (e.g. hypervolume indicator). null if unused.
 	SpeciesScore       float64       // The final score modified by species weighting factors.
 	SpeciationDistance float64       // The speciation distance from the species this specimen is in.
+	speciesMemberCount int           //  How many specimens are in this specimen's species (including itself).
 }
 
 // BySpeciesScore implements sort.Interface to sort descending by SpeciesScore.
