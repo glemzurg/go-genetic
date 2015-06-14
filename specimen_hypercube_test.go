@@ -56,3 +56,27 @@ func (s *SpecimenHypercubeSuite) Test_SpecimenHypercubeDimensions(c *C) {
 	// Invalid parameters.
 	c.Assert(func() { specimenHypercubeDimensions([]float64{4.0, -1.0}, referencePoint, isMaximize, weights) }, Panics, `specimenHypercubeDimensions expects 3 dimensions, but multi-outcome has 2 dimensions`)
 }
+
+func (s *SpecimenHypercubeSuite) Test_NewSpecimenHypercube(c *C) {
+
+	// Some simple configurations.
+	var referencePoint []float64 = []float64{-1.0, -2.0, 3.0}
+	var isMaximize []bool = []bool{true, true, true}
+	var weights []float64 = []float64{3.0, 2.0, 1.0}
+
+	// The specimen in question.
+	var specimen Specimen = Specimen{
+		Outcomes: []float64{4.0, 4.0, 4.0},
+	}
+
+	// The expected hypercube.
+	var expectedHypercube specimenHypercube = specimenHypercube{
+		dimensions: []float64{5.0 * 3.0, 6.0 * 2.0, 1.0 * 1.0},
+		volume:     (5.0 * 3.0) * (6.0 * 2.0) * (1.0 * 1.0),
+		specimen:   specimen,
+	}
+
+	// Create a new hypercube.
+	var hypercube specimenHypercube = newSpecimenHypercube(specimen, referencePoint, isMaximize, weights)
+	c.Assert(hypercube, DeepEquals, expectedHypercube)
+}
