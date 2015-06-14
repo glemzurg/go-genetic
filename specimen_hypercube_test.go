@@ -81,7 +81,7 @@ func (s *SpecimenHypercubeSuite) Test_NewSpecimenHypercube(c *C) {
 	c.Assert(hypercube, DeepEquals, expectedHypercube)
 }
 
-func (s *SpecimenHypercubeSuite) Test_isDominatedBy(c *C) {
+func (s *SpecimenHypercubeSuite) Test_SpecimenHypercube_IsDominatedBy(c *C) {
 
 	// Some specimens.
 	var hypercubeA specimenHypercube = specimenHypercube{
@@ -112,4 +112,37 @@ func (s *SpecimenHypercubeSuite) Test_isDominatedBy(c *C) {
 	c.Check(hypercubeD.isDominatedBy(&hypercubeA), Equals, false)
 	c.Check(hypercubeD.isDominatedBy(&hypercubeB), Equals, false)
 	c.Check(hypercubeD.isDominatedBy(&hypercubeC), Equals, false)
+}
+
+func (s *SpecimenHypercubeSuite) Test_SpecimenHypercube_Equals(c *C) {
+
+	// Some specimens.
+	var hypercubeA specimenHypercube = specimenHypercube{
+		dimensions: []float64{4.0, 4.0, 4.0},
+	}
+	var hypercubeB specimenHypercube = specimenHypercube{
+		dimensions: []float64{4.0, 4.0, 4.0},
+	}
+	var hypercubeC specimenHypercube = specimenHypercube{
+		dimensions: []float64{3.0, 3.0, 3.0},
+	}
+	var hypercubeD specimenHypercube = specimenHypercube{
+		dimensions: []float64{5.0, 3.0, 3.0},
+	}
+
+	c.Check(hypercubeA.equals(&hypercubeB), Equals, true)
+	c.Check(hypercubeA.equals(&hypercubeC), Equals, false)
+	c.Check(hypercubeA.equals(&hypercubeD), Equals, false)
+
+	c.Check(hypercubeB.equals(&hypercubeA), Equals, true)
+	c.Check(hypercubeB.equals(&hypercubeC), Equals, false)
+	c.Check(hypercubeB.equals(&hypercubeD), Equals, false)
+
+	c.Check(hypercubeC.equals(&hypercubeA), Equals, false)
+	c.Check(hypercubeC.equals(&hypercubeB), Equals, false)
+	c.Check(hypercubeC.equals(&hypercubeD), Equals, false)
+
+	c.Check(hypercubeD.equals(&hypercubeA), Equals, false)
+	c.Check(hypercubeD.equals(&hypercubeB), Equals, false)
+	c.Check(hypercubeD.equals(&hypercubeC), Equals, false)
 }

@@ -15,11 +15,6 @@ type hypercubeKdTree struct {
 // newHypecubeKdTree creates a new multi-dimensional search tree for hypercubes.
 func newHypecubeKdTree(hypercubes []*specimenHypercube) hypercubeKdTree {
 
-	log.Println(hypercubes)
-	for _, cube := range hypercubes {
-		log.Println(*cube)
-	}
-
 	// Validate parameters.
 	if len(hypercubes) == 0 {
 		log.Panic("ERROR: newHypecubeKdTree called with no hypercubes")
@@ -120,12 +115,25 @@ func newHypercubeKdTreeNode(hypercubes []*specimenHypercube, dimensions int, dep
 // the final hypervolume indicator will be the volume of the hypercube created by the source hypercube's defining point in one corner and the indicator's
 // base in the opposite corner. As we discover hypercubes that overlap our current indicator, we move the indicator base "higher", closer to the defining
 // point, and so shrink the eventual hypervolume indicator.
-// func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *specimenHypercube, indicatorBase []float64) []float64 {
-//
-// 	// First, just check for simple domination.
-// 	// Is every point
-//
-// }
+func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *specimenHypercube, indicatorBase []float64) []float64 {
+
+	// Only examine this node's hypercube if it's not the one we're currently checking. This is a process of checking other hypercubes
+	// but the one we're checking is somewhere in the k-d tree.
+	if hypercube != n.hypercube {
+		// This node's hypercube is not us.
+
+		// First, just check for simple domination regarding the hypercube of this node.
+		// We run into a potential issue here where two hypercubes have the exact same dimensions.
+		// Only one of these hypercubes will have the hypervolume indicator. The other will be considered a non-contributor.
+
+		// When two hypercubes have exact same dimensions, we want the current searching hypercube to be the "winner".
+		// The other hypercube hasn't been searched yet. If it had then one of these cubes would already be dominated.
+		// As-in the current searching cube would have been dominated, in which case it would not be in the search right now.
+
+	}
+
+	return nil
+}
 
 // byDimensionHypercubeSort implements sort.Interface to sort hypercubes ascending by a particular dimension.
 type byDimensionHypercubeSort struct {

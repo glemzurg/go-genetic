@@ -46,6 +46,17 @@ func (h *specimenHypercube) isDominatedBy(other *specimenHypercube) bool {
 	return true
 }
 
+// equals tells of two hypercubes have the exact same dimensions.
+func (h *specimenHypercube) equals(other *specimenHypercube) bool {
+	// If any of our dimensions don't match, we are *not* equal.
+	for i := range h.dimensions {
+		if h.dimensions[i] != other.dimensions[i] {
+			return false
+		}
+	}
+	return true
+}
+
 // specimenHypercubeDimensions calculates the normalized hypercube.
 func specimenHypercubeDimensions(outcomes []float64, referencePoint []float64, isMaximize []bool, weights []float64) (dimensions []float64, volume float64) {
 
