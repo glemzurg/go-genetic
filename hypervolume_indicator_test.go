@@ -48,3 +48,13 @@ func (s *HypervolumeIndicatorSuite) Test_HypervolumeIndicator(c *C) {
 	// c.Assert(func() { stretchDimensions(hypercube, []float64{100.0, -100.0}) }, Panics, `stretchDimensions expects 3 dimensions, but outcomes have 2 dimensions`)
 
 }
+
+func (s *HypervolumeIndicatorSuite) Test_CalculateHypervolume(c *C) {
+
+	// Calculate some hypervolumes. Base dimensions are always less than limit dimensions.
+	c.Check(calculateHypervolume([]float64{3.0, 4.0, 5.0}, []float64{1.0, 2.0, 3.0}), Equals, 8.0)
+
+	// Invalid parameters.
+	c.Assert(func() { calculateHypervolume([]float64{3.0, 4.0, 5.0}, []float64{3.0, 2.0, 3.0}) }, Panics, `ASSERT: calculateHypervolume base can never be equal to or greater than limit in any dimension`)
+	c.Assert(func() { calculateHypervolume([]float64{3.0, 4.0, 5.0}, []float64{1.0, 5.0, 3.0}) }, Panics, `ASSERT: calculateHypervolume base can never be equal to or greater than limit in any dimension`)
+}

@@ -36,6 +36,20 @@ func newHypecubeKdTree(hypercubes []*specimenHypercube) hypercubeKdTree {
 	}
 }
 
+// calculateHypervolumeIndicator searches through the whole tree and calculates the hypervolume indicator base point for the given hypercube.
+// If the we learn the hypercube is dominated (wholely inside another hypercube) the indicator base is nil.
+func (t *hypercubeKdTree) calculateHypervolumeIndicatorBase(hypercube *specimenHypercube) (isDominated bool, newIndicatorBase []float64) {
+
+	// The initial base for a hypervolume indicator is (0.0, 0.0, ...)
+	var indicatorBase []float64 = make([]float64, len(hypercube.dimensions))
+	for i := range hypercube.dimensions {
+		indicatorBase[i] = 0.0
+	}
+
+	// Now just return what we find when we dive into the tree.
+	return t.root.calculateHypervolumeIndicatorBase(hypercube, indicatorBase)
+}
+
 // hypercubeKdTreeNode is a single node in the search tree. Some portion of the hypercube population is
 // in this node, split over a particular dimension into a left and right branch.
 type hypercubeKdTreeNode struct {
@@ -157,18 +171,27 @@ func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *speci
 			// Caculate what the new indicator base is when this nodes hypercube encrouches on our hypervolume indicator and
 			// "consumes" part of its volume.
 			indicatorBase = moveIndicatorBase(hypercube.dimensions, indicatorBase, n.hypercube.dimensions)
-
-			// The indicator base may have just moved towards the searching hypercube's dimensions, shrinking the hypervolume indicator.
-			// In theory it could have become equal to the searching cube's dimension essnetially making this cube dominated.
-			// That should never happen because we explicitly checked for domination earlier.
 		}
 	}
 
 	// We have compared our seaching cube against the cube in this node (or we are the cube of this node) and were not dominated.
 	// The searching cube's hypervolume indicator base may have moved up a little. Dive into the child branches to find more
 	// cubes that shrink our hypervolume indicator.
+	var isLeftDominated, isRightDominated bool
+	var leftIndicatorBase, rightIndicatorBase []float64
 
-	return false, nil
+	// Go down both branches.
+	isLeftDominated, leftIndicatorBase = n.left.calculateHypervolumeIndicatorBase(hypercube, indicatorBase)
+	isRightDominated, rightIndicatorBase = n.left.calculateHypervolumeIndicatorBase(hypercube, indicatorBase)
+
+	// Dominated?
+	if isLeftDominated || isRightDominated {
+		return true, nil
+	}
+
+	// Not dominated, merge what we learned from both branches regarding the hypervolume indicator base.
+	indicatorBase = moveIndicatorBase(hypercube.dimensions, leftIndicatorBase, rightIndicatorBase)
+	return false, indicatorBase
 }
 
 // moveIndicatorBase moves the indicator base towards the limit based on the input. The limit is the point that defines
