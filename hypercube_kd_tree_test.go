@@ -82,7 +82,7 @@ func (s *HypercubeKdTreeSuite) Test_MoveIndicatorBase(c *C) {
 	c.Assert(moveIndicatorBase([]float64{9.0, 9.0, 9.0}, []float64{-1.0, -2.0, -3.0}, []float64{-3.0, -2.0, -1.0}), DeepEquals, []float64{-1.0, -2.0, -1.0})
 	c.Assert(moveIndicatorBase([]float64{9.0, 9.0, 9.0}, []float64{-3.0, -2.0, -1.0}, []float64{-1.0, -2.0, -3.0}), DeepEquals, []float64{-1.0, -2.0, -1.0})
 
-	// Move values but not past limit.
-	c.Assert(moveIndicatorBase([]float64{9.0, 9.0, 9.0}, []float64{1.0, 2.0, 3.0}, []float64{13.0, 2.0, 1.0}), DeepEquals, []float64{9.0, 2.0, 3.0})
-	c.Assert(moveIndicatorBase([]float64{9.0, 9.0, 9.0}, []float64{3.0, 2.0, 1.0}, []float64{1.0, 12.0, 3.0}), DeepEquals, []float64{3.0, 9.0, 3.0})
+	// Move value past limit have no effect.
+	c.Assert(moveIndicatorBase([]float64{9.0, 9.0, 9.0}, []float64{1.0, 2.0, 3.0}, []float64{13.0, 2.0, 1.0}), DeepEquals, []float64{1.0, 2.0, 3.0})
+	c.Assert(moveIndicatorBase([]float64{9.0, 9.0, 9.0}, []float64{3.0, 2.0, 1.0}, []float64{1.0, 12.0, 3.0}), DeepEquals, []float64{3.0, 2.0, 3.0})
 }

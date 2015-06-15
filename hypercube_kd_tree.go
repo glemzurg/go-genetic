@@ -154,13 +154,19 @@ func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *speci
 		//  it will be the one that shapes our hypervolume indicator (or it was the current searching cube).
 		if !n.hypercube.isDominated {
 
-			// Creep
+			// Caculate what the new indicator base is when this nodes hypercube encrouches on our hypervolume indicator and
+			// "consumes" part of its volume.
+			indicatorBase = moveIndicatorBase(hypercube.dimensions, indicatorBase, n.hypercube.dimensions)
 
+			// The indicator base may have just moved towards the searching hypercube's dimensions, shrinking the hypervolume indicator.
+			// In theory it could have become equal to the searching cube's dimension essnetially making this cube dominated.
+			// That should never happen because we explicitly checked for domination earlier.
 		}
-
-		// Does this node
-
 	}
+
+	// We have compared our seaching cube against the cube in this node (or we are the cube of this node) and were not dominated.
+	// The searching cube's hypervolume indicator base may have moved up a little. Dive into the child branches to find more
+	// cubes that shrink our hypervolume indicator.
 
 	return false, nil
 }
@@ -172,10 +178,18 @@ func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *speci
 func moveIndicatorBase(limit []float64, base []float64, other []float64) (movedBase []float64) {
 	movedBase = make([]float64, len(base))
 	for i := range base {
-		// What is highest value from indicator base and new point?
-		var highestValue float64 = math.Max(base[i], other[i])
-		// The effect of the other cannot push the indicated past the limit (or it becomes an inverted cube!)
-		movedBase[i] = math.Min(limit[i], highestValue)
+
+		// If the other cube dominates the searching cube in a given dimension, it has no effect on the
+		// indicator base. As long as the searching cube finds no hypercube that completely dominates
+		// every dimension it is not dominiated. It has a hypervolume indicator (some contribution it uniquely makes).
+		// The hypevolume indicator is only shrunk by dimensions that don't wholey erase the dimension.
+		if other[i] < limit[i] {
+			// What is highest value from indicator base and new point?
+			movedBase[i] = math.Max(base[i], other[i])
+		} else {
+			// If this is a whole dominated dimension, ignore it. Not part of hypercube indicator volume.
+			movedBase[i] = base[i]
+		}
 	}
 	return movedBase
 }
