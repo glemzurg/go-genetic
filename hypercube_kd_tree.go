@@ -2,6 +2,7 @@ package genetic
 
 import (
 	"log"
+	"math"
 	"sort"
 )
 
@@ -153,6 +154,8 @@ func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *speci
 		//  it will be the one that shapes our hypervolume indicator (or it was the current searching cube).
 		if !n.hypercube.isDominated {
 
+			// Creep
+
 		}
 
 		// Does this node
@@ -162,17 +165,19 @@ func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *speci
 	return false, nil
 }
 
-// Maximize dimensions takes two sets of dimensions and makes a new one with the highest value for each axis.
-func maximizeDimensions(a []float64, b []float64) (maximized []float64) {
-	maximized = make([]float64, len(a))
-	for i := range a {
-		if a[i] > b[i] {
-			maximized[i] = a[i]
-		} else {
-			maximized[i] = b[i]
-		}
+// moveIndicatorBase moves the indicator base towards the limit based on the input. The limit is the point that defines
+// the opposite corner of the hypervolume indicator. We cannot move the base past it in any dimension. The input is the
+// corner of the other hypercube being considered, it is "consuming" volume from the hypervolume indicator by pushing
+// the base in any dimension that it already "owns".
+func moveIndicatorBase(limit []float64, base []float64, other []float64) (movedBase []float64) {
+	movedBase = make([]float64, len(base))
+	for i := range base {
+		// What is highest value from indicator base and new point?
+		var highestValue float64 = math.Max(base[i], other[i])
+		// The effect of the other cannot push the indicated past the limit (or it becomes an inverted cube!)
+		movedBase[i] = math.Min(limit[i], highestValue)
 	}
-	return maximized
+	return movedBase
 }
 
 // byDimensionHypercubeSort implements sort.Interface to sort hypercubes ascending by a particular dimension.

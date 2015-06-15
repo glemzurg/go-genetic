@@ -72,9 +72,17 @@ func (s *HypercubeKdTreeSuite) Test_NewHypecubeKdTree(c *C) {
 	c.Assert(func() { newHypecubeKdTree([]*specimenHypercube{&specimenHypercube{dimensions: []float64{}}}) }, Panics, `ERROR: newHypecubeKdTree called with hypercubes that have no dimensions`)
 }
 
-func (s *HypercubeKdTreeSuite) Test_MaximizeDimensions(c *C) {
-	c.Assert(maximizeDimensions([]float64{1.0, 2.0, 3.0}, []float64{3.0, 2.0, 1.0}), DeepEquals, []float64{3.0, 2.0, 3.0})
-	c.Assert(maximizeDimensions([]float64{3.0, 2.0, 1.0}, []float64{1.0, 2.0, 3.0}), DeepEquals, []float64{3.0, 2.0, 3.0})
-	c.Assert(maximizeDimensions([]float64{-1.0, -2.0, -3.0}, []float64{-3.0, -2.0, -1.0}), DeepEquals, []float64{-1.0, -2.0, -1.0})
-	c.Assert(maximizeDimensions([]float64{-3.0, -2.0, -1.0}, []float64{-1.0, -2.0, -3.0}), DeepEquals, []float64{-1.0, -2.0, -1.0})
+func (s *HypercubeKdTreeSuite) Test_MoveIndicatorBase(c *C) {
+
+	// Moving all values.
+	c.Assert(moveIndicatorBase([]float64{9.0, 9.0, 9.0}, []float64{1.0, 2.0, 3.0}, []float64{3.0, 2.0, 1.0}), DeepEquals, []float64{3.0, 2.0, 3.0})
+	c.Assert(moveIndicatorBase([]float64{9.0, 9.0, 9.0}, []float64{3.0, 2.0, 1.0}, []float64{1.0, 2.0, 3.0}), DeepEquals, []float64{3.0, 2.0, 3.0})
+
+	// For completeness, test negative values.
+	c.Assert(moveIndicatorBase([]float64{9.0, 9.0, 9.0}, []float64{-1.0, -2.0, -3.0}, []float64{-3.0, -2.0, -1.0}), DeepEquals, []float64{-1.0, -2.0, -1.0})
+	c.Assert(moveIndicatorBase([]float64{9.0, 9.0, 9.0}, []float64{-3.0, -2.0, -1.0}, []float64{-1.0, -2.0, -3.0}), DeepEquals, []float64{-1.0, -2.0, -1.0})
+
+	// Move values but not past limit.
+	c.Assert(moveIndicatorBase([]float64{9.0, 9.0, 9.0}, []float64{1.0, 2.0, 3.0}, []float64{13.0, 2.0, 1.0}), DeepEquals, []float64{9.0, 2.0, 3.0})
+	c.Assert(moveIndicatorBase([]float64{9.0, 9.0, 9.0}, []float64{3.0, 2.0, 1.0}, []float64{1.0, 12.0, 3.0}), DeepEquals, []float64{3.0, 9.0, 3.0})
 }
