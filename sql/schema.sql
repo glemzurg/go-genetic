@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.6.21)
 # Database: genetic
-# Generation Time: 2015-05-16 22:18:15 +0000
+# Generation Time: 2015-06-15 03:19:08 +0000
 # ************************************************************
 
 
@@ -31,6 +31,8 @@ CREATE TABLE `experiment` (
   `datetime` datetime NOT NULL,
   `config` blob NOT NULL,
   `scorer` blob NOT NULL,
+  `sorter_type` varchar(128) NOT NULL,
+  `sorter` blob NOT NULL,
   `selector_type` varchar(128) NOT NULL,
   `selector` blob NOT NULL,
   PRIMARY KEY (`experimentid`),
@@ -64,8 +66,9 @@ CREATE TABLE `experiment_generation` (
   `experimentid` int(11) unsigned NOT NULL,
   `generation_num` bigint(11) unsigned NOT NULL,
   `datetime` datetime NOT NULL,
-  `highest_experiment_score` double NOT NULL,
+  `best_experiment_score` double NOT NULL,
   `stagnant_generations` int(11) NOT NULL,
+  `best` varchar(512) NOT NULL DEFAULT '',
   `details` blob NOT NULL,
   PRIMARY KEY (`experimentid`,`generation_num`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -82,9 +85,8 @@ CREATE TABLE `experiment_generation_species` (
   `generation_num` bigint(11) unsigned NOT NULL,
   `species_fingerprint` char(32) NOT NULL DEFAULT '',
   `specimens` bigint(20) unsigned NOT NULL,
-  `highest_score` float(20,2) NOT NULL,
-  `highest_bonus` float(20,2) NOT NULL,
-  `highest_species_score` float(20,2) NOT NULL,
+  `best_score` double NOT NULL,
+  `best` varchar(512) NOT NULL DEFAULT '',
   PRIMARY KEY (`experimentid`,`generation_num`,`species_fingerprint`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
