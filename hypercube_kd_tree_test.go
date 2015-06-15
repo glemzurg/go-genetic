@@ -71,3 +71,10 @@ func (s *HypercubeKdTreeSuite) Test_NewHypecubeKdTree(c *C) {
 	c.Assert(func() { newHypecubeKdTree([]*specimenHypercube{&specimenHypercube{dimensions: nil}}) }, Panics, `ERROR: newHypecubeKdTree called with hypercubes that have no dimensions`)
 	c.Assert(func() { newHypecubeKdTree([]*specimenHypercube{&specimenHypercube{dimensions: []float64{}}}) }, Panics, `ERROR: newHypecubeKdTree called with hypercubes that have no dimensions`)
 }
+
+func (s *HypercubeKdTreeSuite) Test_MaximizeDimensions(c *C) {
+	c.Assert(maximizeDimensions([]float64{1.0, 2.0, 3.0}, []float64{3.0, 2.0, 1.0}), DeepEquals, []float64{3.0, 2.0, 3.0})
+	c.Assert(maximizeDimensions([]float64{3.0, 2.0, 1.0}, []float64{1.0, 2.0, 3.0}), DeepEquals, []float64{3.0, 2.0, 3.0})
+	c.Assert(maximizeDimensions([]float64{-1.0, -2.0, -3.0}, []float64{-3.0, -2.0, -1.0}), DeepEquals, []float64{-1.0, -2.0, -1.0})
+	c.Assert(maximizeDimensions([]float64{-3.0, -2.0, -1.0}, []float64{-1.0, -2.0, -3.0}), DeepEquals, []float64{-1.0, -2.0, -1.0})
+}

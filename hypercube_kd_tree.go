@@ -115,7 +115,7 @@ func newHypercubeKdTreeNode(hypercubes []*specimenHypercube, dimensions int, dep
 // the final hypervolume indicator will be the volume of the hypercube created by the source hypercube's defining point in one corner and the indicator's
 // base in the opposite corner. As we discover hypercubes that overlap our current indicator, we move the indicator base "higher", closer to the defining
 // point, and so shrink the eventual hypervolume indicator.
-func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *specimenHypercube, indicatorBase []float64) []float64 {
+func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *specimenHypercube, indicatorBase []float64) (isDominated bool, newIndicatorBase []float64) {
 
 	// Only examine this node's hypercube if it's not the one we're currently checking. This is a process of checking other hypercubes
 	// but the one we're checking is somewhere in the k-d tree.
@@ -123,16 +123,56 @@ func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *speci
 		// This node's hypercube is not us.
 
 		// First, just check for simple domination regarding the hypercube of this node.
-		// We run into a potential issue here where two hypercubes have the exact same dimensions.
-		// Only one of these hypercubes will have the hypervolume indicator. The other will be considered a non-contributor.
+		switch {
 
-		// When two hypercubes have exact same dimensions, we want the current searching hypercube to be the "winner".
-		// The other hypercube hasn't been searched yet. If it had then one of these cubes would already be dominated.
-		// As-in the current searching cube would have been dominated, in which case it would not be in the search right now.
+		case hypercube.equals(n.hypercube):
+			// We run into a potential issue here where two hypercubes have the exact same dimensions.
+			// Only one of these hypercubes will have the hypervolume indicator. The other will be considered a non-contributor.
+			// When two hypercubes have exact same dimensions, we want the current searching hypercube to be the "winner".
+			// The other hypercube hasn't been searched yet. If it had then one of these cubes would already be dominated.
+			// As-in the current searching cube would have been dominated, in which case it would not be in the search right now.
+			n.hypercube.isDominated = true // This is a pointer manipulation altering the top-level hypercube list.
+
+		case hypercube.isDominatedBy(n.hypercube):
+			// We're not equal and this hypercube exists wholely inside another cube. We don't know whether some other cube
+			// has or will dominate the other cube, be we are definitely a non-contributor to the population's hypervolume.
+			hypercube.isDominated = true // This is a pointer manipulation altering the top-level hypercube list.
+
+		case n.hypercube.isDominatedBy(hypercube):
+			// We're not equal and this nodes hypercube wholely exists inside the searching hypercube. It is dominated.
+			n.hypercube.isDominated = true
+		}
+
+		// If we are dominated, short circuit out of the search. We have the answer we need for this hypercube.
+		if hypercube.isDominated {
+			return true, nil
+		}
+
+		// We're not dominated. If this node's hypercube is also not dominated, it can tell us something about our hypervolume
+		// indicator. If this node's hypercube is dominated, what it has to tell us is irrelevant. The hypercube that dominated
+		//  it will be the one that shapes our hypervolume indicator (or it was the current searching cube).
+		if !n.hypercube.isDominated {
+
+		}
+
+		// Does this node
 
 	}
 
-	return nil
+	return false, nil
+}
+
+// Maximize dimensions takes two sets of dimensions and makes a new one with the highest value for each axis.
+func maximizeDimensions(a []float64, b []float64) (maximized []float64) {
+	maximized = make([]float64, len(a))
+	for i := range a {
+		if a[i] > b[i] {
+			maximized[i] = a[i]
+		} else {
+			maximized[i] = b[i]
+		}
+	}
+	return maximized
 }
 
 // byDimensionHypercubeSort implements sort.Interface to sort hypercubes ascending by a particular dimension.
