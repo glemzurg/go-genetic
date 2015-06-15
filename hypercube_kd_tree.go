@@ -180,9 +180,19 @@ func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *speci
 	var isLeftDominated, isRightDominated bool
 	var leftIndicatorBase, rightIndicatorBase []float64
 
-	// Go down both branches.
-	isLeftDominated, leftIndicatorBase = n.left.calculateHypervolumeIndicatorBase(hypercube, indicatorBase)
-	isRightDominated, rightIndicatorBase = n.left.calculateHypervolumeIndicatorBase(hypercube, indicatorBase)
+	// Go down left branch if there is one.
+	if n.left == nil {
+		isLeftDominated, leftIndicatorBase = false, indicatorBase
+	} else {
+		isLeftDominated, leftIndicatorBase = n.left.calculateHypervolumeIndicatorBase(hypercube, indicatorBase)
+	}
+
+	// Go down right branch if there is one.
+	if n.right == nil {
+		isRightDominated, rightIndicatorBase = false, indicatorBase
+	} else {
+		isRightDominated, rightIndicatorBase = n.right.calculateHypervolumeIndicatorBase(hypercube, indicatorBase)
+	}
 
 	// Dominated?
 	if isLeftDominated || isRightDominated {
