@@ -47,8 +47,11 @@ func main() {
 		log.Panic(err)
 	}
 
+	// We are maximizing the score for this experiment.
+	var sorter genetic.Sorter = genetic.NewSorterSimpleMaximize() // Higher scores are fitter.
+
 	// Run the experiment.
-	genetic.RunExperiment(experimentName, geneticConfig, &selector, &scorer)
+	genetic.RunExperiment(experimentName, geneticConfig, sorter, &selector, &scorer)
 	log.Println("Experiment Complete.")
 	os.Exit(0)
 }

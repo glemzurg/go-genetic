@@ -252,15 +252,14 @@ func (s *Species) pickSpecimen(populationSpecimenIndex int) (specimen Specimen, 
 	return s.Specimens[localIndex], s.Specimens, localIndex, true
 }
 
-// WeightSpecies weights all the specimen scores by the size of the species.
+// WeightSpecies weights adds to the specimens enough information to weigh by species in scoring.
 func (s *Species) WeightSpecies() {
 
-	// How many specimens are there.
+	// How many specimens are there?
 	var specimenCount int = len(s.Specimens)
 	for i := range s.Specimens {
 		// The more specimens in the species, the lower the score. Keeps one species from
 		// taking over the whole population.
-		s.Specimens[i].SpeciesScore = (s.Specimens[i].Score + s.Specimens[i].Bonus) / float64(specimenCount)
 		s.Specimens[i].SpeciesMemberCount = specimenCount
 	}
 }
@@ -271,18 +270,9 @@ type Specimen struct {
 	Score              float64       // The score of the neural net for selectors that use it. 0.0 if unused.
 	Bonus              float64       // The bonus for meta-qualiteis (e.g. novelty searches). 0.0 if unused.
 	Outcomes           []float64     // Multi-outcomes for selectors that use it (e.g. hypervolume indicator). null if unused.
-	SpeciesScore       float64       // The final score modified by species weighting factors.
 	SpeciationDistance float64       // The speciation distance from the species this specimen is in.
 	SpeciesMemberCount int           //  How many specimens are in this specimen's species (including itself).
 }
-
-// BySpeciesScore implements sort.Interface to sort descending by SpeciesScore.
-// Example: sort.Sort(BySpeciesScore(specimens))
-type BySpeciesScore []Specimen
-
-func (a BySpeciesScore) Len() int           { return len(a) }
-func (a BySpeciesScore) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a BySpeciesScore) Less(i, j int) bool { return a[i].SpeciesScore > a[j].SpeciesScore }
 
 // newSpecimen creates a well-formed member of the population.
 func newSpecimen(neuralNet NeatNeuralNet, score float64, bonus float64, outcomes []float64) Specimen {
@@ -292,7 +282,7 @@ func newSpecimen(neuralNet NeatNeuralNet, score float64, bonus float64, outcomes
 		Bonus:              bonus,
 		Outcomes:           outcomes,
 		SpeciationDistance: 0.0, // Not calculated yet.
-		SpeciesScore:       0.0, // Not calculated yet.
+		SpeciesMemberCount: 0,   // Not calculated yet.
 	}
 }
 
@@ -321,11 +311,6 @@ func (s *Specimen) MateMutate(speciesSpecimens []Specimen, specimenIndex int, co
 		// Pick another member of the species to mate with.
 		var fitterParent Specimen = *s // Assume this is the fitter parent.
 		var otherParent Specimen = randomSpecimenWithSkip(speciesSpecimens, specimenIndex)
-		// Is the other parent fitter?
-		if otherParent.SpeciesScore > fitterParent.SpeciesScore {
-			fitterParent = otherParent
-			otherParent = *s // We're the less fit parent.
-		}
 		newNeuralNet = Mate(fitterParent.NeuralNet, otherParent.NeuralNet)
 
 	case _CHANGE_MUTATE_ADD_NODE:

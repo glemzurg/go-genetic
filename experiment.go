@@ -11,7 +11,6 @@ import (
 	"math/rand"
 	"os"
 	"reflect"
-	"sort"
 	"time"
 )
 
@@ -26,18 +25,20 @@ type geneticExperiment struct {
 	experimentId   int64    // The SQL id for this experiment after it is added to the database.
 	config         Config   // The configuration for this experiment.
 	scorer         Scorer   // The scorer of each specimen of a generation.
+	sorter         Sorter   // The sorter that orders the specimens for selection.
 	selector       Selector // The selector of which specimens should continue on to the next generation.
 	db             *sql.DB  // The database connection.
 }
 
 // RunExperiment runs a genetic experiment until stopped manually or an end condition is met.
-func RunExperiment(experimentName string, config Config, selector Selector, scorer Scorer) {
+func RunExperiment(experimentName string, config Config, sorter Sorter, selector Selector, scorer Scorer) {
 
 	// Create the experiment.
 	var experiment geneticExperiment = geneticExperiment{
 		experimentName: experimentName,
 		config:         config,
 		scorer:         scorer,
+		sorter:         sorter,
 		selector:       selector,
 		db:             newDatabaseConnection(),
 	}
@@ -63,7 +64,7 @@ func RunExperiment(experimentName string, config Config, selector Selector, scor
 
 	// Keep track if this experiment becomes stagnant (fitness never improving).
 	// In this case, we have found some maxima and cannot move beyond it.
-	var highestExperimentScore float64 = 0.0
+	var bestExperimentScore float64 = 0.0
 	var stagnantGenerationCount uint64 = 0
 
 	// What generation is the last of the experiment?
@@ -71,6 +72,9 @@ func RunExperiment(experimentName string, config Config, selector Selector, scor
 	if endConditionGenerationNum == 0 {
 		endConditionGenerationNum = _DEFAULT_END_GENERATION_NUM
 	}
+
+	// Every generation capture the details of the best member of that generation.
+	var best string
 
 	// Keep track of why the experiment ends.
 	var endReason string
@@ -98,7 +102,6 @@ func RunExperiment(experimentName string, config Config, selector Selector, scor
 		var neuralNets []NeatNeuralNet = population.DumpSpecimensAsNeuralNets()
 
 		// Score each neural net, one at a time. Bundle with its scores to make a specimen.
-		var highestScore float64
 		for i, neuralNet := range neuralNets {
 
 			// For scoring get these results:
@@ -112,9 +115,6 @@ func RunExperiment(experimentName string, config Config, selector Selector, scor
 
 			// Score this neural net.
 			score, bonus, outcomes = scorer.Score(neuralNet, neuralNets, i)
-			if score > highestScore {
-				highestScore = score
-			}
 
 			// Re-add the specimen into the population.
 			population.AddNeuralNet(neuralNet, score, bonus, outcomes)
@@ -126,8 +126,9 @@ func RunExperiment(experimentName string, config Config, selector Selector, scor
 		// Dump the specimens from the population, ready for selection.
 		var specimens []Specimen = population.DumpSpecimens()
 
-		// Sort descending by species score.
-		sort.Sort(BySpeciesScore(specimens))
+		// Sort the specimens. The specimens earlier in the slice are considered more fit.
+		var bestScore float64
+		bestScore, best = experiment.sorter.Sort(specimens)
 
 		// Select the fittest specimens.
 		var fittestSpecimens []Specimen = experiment.selector.Select(specimens)
@@ -135,12 +136,23 @@ func RunExperiment(experimentName string, config Config, selector Selector, scor
 		// Add the the specimens back into the population.
 		population.AddAllSpecimens(fittestSpecimens)
 
-		// Has fitness improved in this generation?
-		if highestExperimentScore < highestScore {
-			highestExperimentScore = highestScore
-			stagnantGenerationCount = 0
+		// Did we improve over prior generations?
+		if experiment.sorter.IsMaximize() {
+			// Maximizing score.
+			if bestScore > bestExperimentScore {
+				bestExperimentScore = bestScore
+				stagnantGenerationCount = 0
+			} else {
+				stagnantGenerationCount++
+			}
 		} else {
-			stagnantGenerationCount++
+			// Minimizing score.
+			if bestScore < bestExperimentScore {
+				bestExperimentScore = bestScore
+				stagnantGenerationCount = 0
+			} else {
+				stagnantGenerationCount++
+			}
 		}
 
 		// Is this experiment over?
@@ -153,10 +165,21 @@ func RunExperiment(experimentName string, config Config, selector Selector, scor
 		}
 
 		// Have we reached a target score?
-		if experiment.config.EndCondition.TargetScore > 0.0 && highestScore >= experiment.config.EndCondition.TargetScore {
-			// End the experiment.
-			endReason = fmt.Sprintf("target score %f reached: %f", experiment.config.EndCondition.TargetScore, highestScore)
-			break
+		if experiment.sorter.IsMaximize() {
+			// Maximizing score.
+			if experiment.config.EndCondition.TargetScore > 0.0 && bestExperimentScore >= experiment.config.EndCondition.TargetScore {
+				// End the experiment.
+				endReason = fmt.Sprintf("target score %f reached: %f", experiment.config.EndCondition.TargetScore, bestExperimentScore)
+				break
+			}
+		} else {
+			// Minimizing score.
+			// Since an uninitialized config will give a target score of 0.0, assume that is our target or anything else specified.
+			if bestExperimentScore <= experiment.config.EndCondition.TargetScore {
+				// End the experiment.
+				endReason = fmt.Sprintf("target score %f reached: %f", experiment.config.EndCondition.TargetScore, bestExperimentScore)
+				break
+			}
 		}
 
 		// Is the experiment stuck and not improving?
@@ -190,12 +213,12 @@ func RunExperiment(experimentName string, config Config, selector Selector, scor
 
 		// Record the generation of the experiment.
 		if isRecordGeneration {
-			experiment.recordGeneration(generationNum, highestExperimentScore, stagnantGenerationCount, population)
+			experiment.recordGeneration(generationNum, bestExperimentScore, stagnantGenerationCount, best, population)
 		}
 	}
 
 	// If we just ended the experiment we have yet to record this last generation.
-	experiment.recordGeneration(generationNum, highestExperimentScore, stagnantGenerationCount, population)
+	experiment.recordGeneration(generationNum, bestExperimentScore, stagnantGenerationCount, best, population)
 
 	// Record the end of the experiment.
 	experiment.recordEnd(generationNum, endReason, population)
@@ -219,6 +242,15 @@ func (e *geneticExperiment) recordStart() {
 	}
 	var scorerJson string = string(bytes)
 
+	// Get the sorter as json.
+	if bytes, err = json.Marshal(e.sorter); err != nil {
+		log.Panic(err)
+	}
+	var sorterJson string = string(bytes)
+
+	// Also save the type of scorer we're using.
+	var sorterType string = reflect.ValueOf(e.sorter).Elem().Type().String()
+
 	// Get the selector as json.
 	if bytes, err = json.Marshal(e.selector); err != nil {
 		log.Panic(err)
@@ -236,11 +268,15 @@ func (e *geneticExperiment) recordStart() {
              datetime=NOW(),
              config=?,
              scorer=?,
+             sorter_type=?,
+             sorter=?,
              selector_type=?,
              selector=?`,
 		e.experimentName,
 		configJson,
 		scorerJson,
+		sorterType,
+		sorterJson,
 		selectorType,
 		selectorJson); err != nil {
 
@@ -268,7 +304,7 @@ func (e *geneticExperiment) recordStart() {
 }
 
 // recordGeneration records details of a single generation of the experiment.
-func (e *geneticExperiment) recordGeneration(generationNum uint64, highestExperimentScore float64, stagnantGenerationCount uint64, population Population) {
+func (e *geneticExperiment) recordGeneration(generationNum uint64, bestExperimentScore float64, stagnantGenerationCount uint64, best string, population Population) {
 	var err error
 
 	// Get generation details from the scorer.
@@ -281,13 +317,15 @@ func (e *geneticExperiment) recordGeneration(generationNum uint64, highestExperi
          SET experimentid=?,
              generation_num=?,
              datetime=NOW(),
-             highest_experiment_score=?,
+             best_experiment_score=?,
              stagnant_generations=?,
+             best=?,
              details=?`,
 		e.experimentId,
 		generationNum,
-		highestExperimentScore,
+		bestExperimentScore,
 		stagnantGenerationCount,
+		best,
 		scorerBytes); err != nil {
 
 		log.Panic(err)
@@ -316,22 +354,11 @@ func (e *geneticExperiment) recordGeneration(generationNum uint64, highestExperi
 		var genomeJson string = string(bytes)
 		var genomeMd5 string = md5Of(genomeJson)
 
-		// Get the overview of the specimens.
+		// Species overview.
 		var specimenCount int = len(species.Specimens)
-		var highestScore float64 = 0.0
-		var highestBonus float64 = 0.0
-		var highestSpeciesScore float64 = 0.0
-		for _, specimen := range species.Specimens {
-			if specimen.Score > highestScore {
-				highestScore = specimen.Score
-			}
-			if specimen.Bonus > highestBonus {
-				highestBonus = specimen.Bonus
-			}
-			if specimen.SpeciesScore > highestSpeciesScore {
-				highestSpeciesScore = specimen.SpeciesScore
-			}
-		}
+		var specimenBest string
+		var specimenBestScore float64
+		specimenBestScore, specimenBest = e.sorter.Sort(species.Specimens)
 
 		// Write the core experiment record to the database.
 		var result sql.Result
@@ -341,16 +368,14 @@ func (e *geneticExperiment) recordGeneration(generationNum uint64, highestExperi
              generation_num=?,
              species_fingerprint=?,
              specimens=?,
-             highest_score=?,
-             highest_bonus=?,
-             highest_species_score=?`,
+             best_score=?,
+             best=?`,
 			e.experimentId,
 			generationNum,
 			genomeMd5,
 			specimenCount,
-			highestScore,
-			highestBonus,
-			highestSpeciesScore); err != nil {
+			specimenBestScore,
+			specimenBest); err != nil {
 
 			log.Panic(err)
 		}
