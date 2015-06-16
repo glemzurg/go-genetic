@@ -42,8 +42,8 @@ func main() {
 		log.Panic(err)
 	}
 
-	var selector genetic.TruncateSelector
-	if selector, err = genetic.LoadTruncateSelectorConfig(*selectorFilename); err != nil {
+	var selector genetic.SelectorElitism
+	if selector, err = genetic.LoadSelectorElitismConfig(*selectorFilename); err != nil {
 		log.Panic(err)
 	}
 

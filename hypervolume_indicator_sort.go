@@ -236,16 +236,16 @@ func calculateHypercubeContribution(hypercube []hypercubeDimension, outcomes []f
 // func LoadHypervolumeIndicatorSelectorConfig(selector Selector, filename string) (HypervolumeIndicatorSelector, error) {
 // 	var err error
 // 	var bytes []byte
-// 	var selector TruncateSelector
+// 	var selector SelectorElitism
 //
 // 	log.Printf("Loading truncate selector Config: '%s'\n", filename)
 //
 // 	// Load and parse from json.
 // 	if bytes, err = ioutil.ReadFile(filename); err != nil {
-// 		return TruncateSelector{}, err
+// 		return SelectorElitism{}, err
 // 	}
 // 	if err = json.Unmarshal(bytes, &selector); err != nil {
-// 		return TruncateSelector{}, err
+// 		return SelectorElitism{}, err
 // 	}
 //
 // 	return selector, error(nil)
