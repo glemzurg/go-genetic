@@ -90,7 +90,7 @@ func (c *NeatNeuralNet) addConnection(from string, to string, weight float64) (w
 	}
 
 	// Start with a gene with no id (we don't want to use an id until we know this gene is valid).
-	var newGene NeatGene = NeatGene{
+	var newGene neatGene = neatGene{
 		IsEnabled: true,
 		Type:      _GENE_TYPE_CONNECTION,
 		From:      from,
@@ -111,7 +111,7 @@ func (c *NeatNeuralNet) addConnection(from string, to string, weight float64) (w
 	// Test the new gene (before getting a real geneId), verify it does not create any circular dependencies.
 	// As long as we are not a simple wiring from input to output.
 	if !(isFromInput && isToOutput) {
-		var testGenes []NeatGene = make([]NeatGene, len(c.Genome.Genes))
+		var testGenes []neatGene = make([]neatGene, len(c.Genome.Genes))
 		copy(testGenes, c.Genome.Genes)
 		testGenes = append(testGenes, newGene) // The fake node can be tested without giving it a node id.
 		var ok bool
@@ -155,11 +155,11 @@ func (c *NeatNeuralNet) addNode(connectionGeneIndex int, function string) {
 	var nodeId string = strconv.FormatUint(nodeGeneId, _BASE_10)
 
 	// Add the node.
-	c.Genome.Genes = append(c.Genome.Genes, NeatGene{GeneId: nodeGeneId, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: function})
+	c.Genome.Genes = append(c.Genome.Genes, neatGene{GeneId: nodeGeneId, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: function})
 
 	// Add new connections that take the place of the disabled connectino but have the node in the middle.
-	c.Genome.Genes = append(c.Genome.Genes, NeatGene{GeneId: newGeneId(), IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: from, To: nodeId, Weight: weight})
-	c.Genome.Genes = append(c.Genome.Genes, NeatGene{GeneId: newGeneId(), IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: nodeId, To: to, Weight: weight})
+	c.Genome.Genes = append(c.Genome.Genes, neatGene{GeneId: newGeneId(), IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: from, To: nodeId, Weight: weight})
+	c.Genome.Genes = append(c.Genome.Genes, neatGene{GeneId: newGeneId(), IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: nodeId, To: to, Weight: weight})
 }
 
 // MutateAddNode adds a new node to the neural net with a randomly picked activation function and spliting a randomly selected
@@ -276,14 +276,14 @@ func Mate(fitterParent NeatNeuralNet, otherParent NeatNeuralNet) (child NeatNeur
 	}
 
 	// Get the genomes we are working with.
-	var fitterGenes []NeatGene = fitterParent.Genome.Genes
-	var otherGenes []NeatGene = otherParent.Genome.Genes
+	var fitterGenes []neatGene = fitterParent.Genome.Genes
+	var otherGenes []neatGene = otherParent.Genome.Genes
 
 	// The genomes should be always sorted ascending by gene id but do a sanity check.
-	if !sort.IsSorted(ByGeneId(fitterGenes)) {
+	if !sort.IsSorted(byGeneId(fitterGenes)) {
 		panic(fmt.Sprintf("genome not sorted correctly by gene id: %+v", fitterGenes))
 	}
-	if !sort.IsSorted(ByGeneId(otherGenes)) {
+	if !sort.IsSorted(byGeneId(otherGenes)) {
 		panic(fmt.Sprintf("genome not sorted correctly by gene id: %+v", otherGenes))
 	}
 
@@ -334,7 +334,7 @@ func (c *NeatNeuralNet) RandomizedClone() (clone NeatNeuralNet) {
 	}
 	// The genomes need to be copied/modified one at a time and referentially distinct between the neural nets.
 	for _, origGene := range c.Genome.Genes {
-		var cloneGene NeatGene = origGene
+		var cloneGene neatGene = origGene
 		if cloneGene.IsEnabled == true && cloneGene.Type == _GENE_TYPE_CONNECTION {
 			cloneGene.Weight = rand.Float64() // 0.0 to 1.0. Actually will never by 1.0 but will be less than 1.0.
 		}

@@ -55,26 +55,26 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_AddConnection(c *C) {
 	// Add a connection.
 	ok = neuralNet.addConnection("i1", "o1", 0.5)
 	c.Assert(ok, Equals, true)
-	c.Check(neuralNet.Genome, DeepEquals, NeatGenome{Genes: []NeatGene{
-		NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 0.5},
+	c.Check(neuralNet.Genome, DeepEquals, NeatGenome{Genes: []neatGene{
+		neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 0.5},
 	}})
 	c.Check(_maxGeneId, Equals, uint64(1))
 
 	// Add a different connection.
 	ok = neuralNet.addConnection("i2", "o2", 0.3)
 	c.Assert(ok, Equals, true)
-	c.Check(neuralNet.Genome, DeepEquals, NeatGenome{Genes: []NeatGene{
-		NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 0.5},
-		NeatGene{GeneId: 2, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 0.3},
+	c.Check(neuralNet.Genome, DeepEquals, NeatGenome{Genes: []neatGene{
+		neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 0.5},
+		neatGene{GeneId: 2, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 0.3},
 	}})
 	c.Check(_maxGeneId, Equals, uint64(2))
 
 	// Attempt to add the same connection again.
 	ok = neuralNet.addConnection("i2", "o2", 0.5)
 	c.Assert(ok, Equals, false) // Wasn't added.
-	c.Check(neuralNet.Genome, DeepEquals, NeatGenome{Genes: []NeatGene{
-		NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 0.5},
-		NeatGene{GeneId: 2, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 0.3},
+	c.Check(neuralNet.Genome, DeepEquals, NeatGenome{Genes: []neatGene{
+		neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 0.5},
+		neatGene{GeneId: 2, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 0.3},
 	}})
 	c.Check(_maxGeneId, Equals, uint64(2)) // GeneId not incremented.
 
@@ -100,16 +100,16 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_AddConnection_HiddenNodes(c *C) 
 			Inputs:  []string{"i1"},
 			Outputs: []string{"o1"},
 		},
-		Genome: NeatGenome{Genes: []NeatGene{
-			NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
-			NeatGene{GeneId: 2, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_SINE},
-			NeatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_RAMP},
-			NeatGene{GeneId: 4, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "b", To: "o1", Weight: 0.1},
-			NeatGene{GeneId: 5, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "1", Weight: 0.2},
-			NeatGene{GeneId: 6, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "1", To: "2", Weight: 0.3},
-			NeatGene{GeneId: 7, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "2", To: "3", Weight: 0.4},
-			NeatGene{GeneId: 8, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "3", To: "o1", Weight: 0.5},
-			NeatGene{GeneId: 9, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 0.6}, // Disabled!
+		Genome: NeatGenome{Genes: []neatGene{
+			neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
+			neatGene{GeneId: 2, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_SINE},
+			neatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_RAMP},
+			neatGene{GeneId: 4, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "b", To: "o1", Weight: 0.1},
+			neatGene{GeneId: 5, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "1", Weight: 0.2},
+			neatGene{GeneId: 6, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "1", To: "2", Weight: 0.3},
+			neatGene{GeneId: 7, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "2", To: "3", Weight: 0.4},
+			neatGene{GeneId: 8, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "3", To: "o1", Weight: 0.5},
+			neatGene{GeneId: 9, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 0.6}, // Disabled!
 		},
 		},
 	}
@@ -146,25 +146,25 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_AddConnection_HiddenNodes(c *C) 
 	// Connect an input to a hidden node.
 	ok = neuralNet.addConnection("i1", "2", 0.12)
 	c.Assert(ok, Equals, true) // Wasn't added.
-	c.Check(neuralNet.Genome.Genes[9], DeepEquals, NeatGene{GeneId: 10, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "2", Weight: 0.12})
+	c.Check(neuralNet.Genome.Genes[9], DeepEquals, neatGene{GeneId: 10, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "2", Weight: 0.12})
 	c.Check(_maxGeneId, Equals, uint64(10)) // Gene id incremented.
 
 	// Connect a hidden node to a hidden node.
 	ok = neuralNet.addConnection("1", "3", 0.13)
 	c.Assert(ok, Equals, true) // Wasn't added.
-	c.Check(neuralNet.Genome.Genes[10], DeepEquals, NeatGene{GeneId: 11, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "1", To: "3", Weight: 0.13})
+	c.Check(neuralNet.Genome.Genes[10], DeepEquals, neatGene{GeneId: 11, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "1", To: "3", Weight: 0.13})
 	c.Check(_maxGeneId, Equals, uint64(11)) // Gene id incremented.
 
 	// Connect a hidden node to an output.
 	ok = neuralNet.addConnection("2", "o1", 0.14)
 	c.Assert(ok, Equals, true) // Wasn't added.
-	c.Check(neuralNet.Genome.Genes[11], DeepEquals, NeatGene{GeneId: 12, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "2", To: "o1", Weight: 0.14})
+	c.Check(neuralNet.Genome.Genes[11], DeepEquals, neatGene{GeneId: 12, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "2", To: "o1", Weight: 0.14})
 	c.Check(_maxGeneId, Equals, uint64(12)) // Gene id incremented.
 
 	// Connect the bias to a hidden node.
 	ok = neuralNet.addConnection("b", "1", 0.15)
 	c.Assert(ok, Equals, true) // Wasn't added.
-	c.Check(neuralNet.Genome.Genes[12], DeepEquals, NeatGene{GeneId: 13, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "b", To: "1", Weight: 0.15})
+	c.Check(neuralNet.Genome.Genes[12], DeepEquals, neatGene{GeneId: 13, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "b", To: "1", Weight: 0.15})
 	c.Check(_maxGeneId, Equals, uint64(13)) // Gene id incremented.
 }
 
@@ -177,11 +177,11 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_AddNode(c *C) {
 			Inputs:  []string{"i1", "i2", "i3", "i4"},
 			Outputs: []string{"o1", "o2"},
 		},
-		Genome: NeatGenome{Genes: []NeatGene{
-			NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
+		Genome: NeatGenome{Genes: []neatGene{
+			neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
+			neatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
 		}},
 	}
 
@@ -189,14 +189,14 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_AddNode(c *C) {
 	setMaxGeneId(345)
 	c.Assert(_maxGeneId, Equals, uint64(345))
 	neuralNet.addNode(0, ACTIVATION_SIGMOID)
-	c.Check(neuralNet.Genome.Genes, DeepEquals, []NeatGene{
-		NeatGene{GeneId: 1, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1}, // Disable the original connection.
-		NeatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2},
-		NeatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},
-		NeatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},
-		NeatGene{GeneId: 346, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_SIGMOID},             // Node added to genome.
-		NeatGene{GeneId: 347, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "346", Weight: 1.1}, // First half of original connection.
-		NeatGene{GeneId: 348, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "346", To: "o1", Weight: 1.1}, // First half of original connection.
+	c.Check(neuralNet.Genome.Genes, DeepEquals, []neatGene{
+		neatGene{GeneId: 1, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1}, // Disable the original connection.
+		neatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2},
+		neatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},
+		neatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},
+		neatGene{GeneId: 346, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_SIGMOID},             // Node added to genome.
+		neatGene{GeneId: 347, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "346", Weight: 1.1}, // First half of original connection.
+		neatGene{GeneId: 348, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "346", To: "o1", Weight: 1.1}, // First half of original connection.
 	})
 
 	// Make a new neural net (avoiding randomness).
@@ -205,11 +205,11 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_AddNode(c *C) {
 			Inputs:  []string{"i1", "i2", "i3", "i4"},
 			Outputs: []string{"o1", "o2"},
 		},
-		Genome: NeatGenome{Genes: []NeatGene{
-			NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
+		Genome: NeatGenome{Genes: []neatGene{
+			neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
+			neatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
 		}},
 	}
 
@@ -224,11 +224,11 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_AddNode(c *C) {
 			Inputs:  []string{"i1", "i2", "i3", "i4"},
 			Outputs: []string{"o1", "o2"},
 		},
-		Genome: NeatGenome{Genes: []NeatGene{
-			NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
+		Genome: NeatGenome{Genes: []neatGene{
+			neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
+			neatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
 		}},
 	}
 
@@ -236,14 +236,14 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_AddNode(c *C) {
 	setMaxGeneId(345)
 	c.Assert(_maxGeneId, Equals, uint64(345))
 	neuralNet.addNode(2, ACTIVATION_SIGMOID)
-	c.Check(neuralNet.Genome.Genes, DeepEquals, []NeatGene{
-		NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},
-		NeatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2},
-		NeatGene{GeneId: 3, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3}, // Disable the original connection.
-		NeatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},
-		NeatGene{GeneId: 346, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_SIGMOID},             // Node added to genome.
-		NeatGene{GeneId: 347, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "346", Weight: 1.3}, // First half of original connection.
-		NeatGene{GeneId: 348, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "346", To: "o1", Weight: 1.3}, // First half of original connection.
+	c.Check(neuralNet.Genome.Genes, DeepEquals, []neatGene{
+		neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},
+		neatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2},
+		neatGene{GeneId: 3, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3}, // Disable the original connection.
+		neatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},
+		neatGene{GeneId: 346, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_SIGMOID},             // Node added to genome.
+		neatGene{GeneId: 347, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "346", Weight: 1.3}, // First half of original connection.
+		neatGene{GeneId: 348, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "346", To: "o1", Weight: 1.3}, // First half of original connection.
 	})
 
 	// Make a new neural net (avoiding randomness).
@@ -252,11 +252,11 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_AddNode(c *C) {
 			Inputs:  []string{"i1", "i2", "i3", "i4"},
 			Outputs: []string{"o1", "o2"},
 		},
-		Genome: NeatGenome{Genes: []NeatGene{
-			NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
+		Genome: NeatGenome{Genes: []neatGene{
+			neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
+			neatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
 		}},
 	}
 
@@ -280,11 +280,11 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_MutateAddNode(c *C) {
 			Inputs:  []string{"i1", "i2", "i3", "i4"},
 			Outputs: []string{"o1", "o2"},
 		},
-		Genome: NeatGenome{Genes: []NeatGene{
-			NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
+		Genome: NeatGenome{Genes: []neatGene{
+			neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
+			neatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
 		}},
 	}
 
@@ -303,11 +303,11 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_MutateAddNode_NoActivationFuncti
 			Inputs:  []string{"i1", "i2", "i3", "i4"},
 			Outputs: []string{"o1", "o2"},
 		},
-		Genome: NeatGenome{Genes: []NeatGene{
-			NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
+		Genome: NeatGenome{Genes: []neatGene{
+			neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
+			neatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
 		}},
 	}
 
@@ -329,13 +329,13 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_MutateAddConnection(c *C) {
 			Inputs:  []string{"i1", "i2", "i3", "i4"},
 			Outputs: []string{"o1", "o2"},
 		},
-		Genome: NeatGenome{Genes: []NeatGene{
-			NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 5, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
-			NeatGene{GeneId: 6, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
+		Genome: NeatGenome{Genes: []neatGene{
+			neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
+			neatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
+			neatGene{GeneId: 5, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
+			neatGene{GeneId: 6, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
 		}},
 	}
 	setMaxGeneId(6)
@@ -361,13 +361,13 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_MutateChangeConnectionWeight(c *
 			Inputs:  []string{"i1", "i2", "i3", "i4"},
 			Outputs: []string{"o1", "o2"},
 		},
-		Genome: NeatGenome{Genes: []NeatGene{
-			NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 5, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
-			NeatGene{GeneId: 6, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
+		Genome: NeatGenome{Genes: []neatGene{
+			neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
+			neatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
+			neatGene{GeneId: 5, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
+			neatGene{GeneId: 6, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
 		}},
 	}
 
@@ -386,11 +386,11 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_MutateAddConnection_NoMaxAttempt
 			Inputs:  []string{"i1", "i2", "i3", "i4"},
 			Outputs: []string{"o1", "o2"},
 		},
-		Genome: NeatGenome{Genes: []NeatGene{
-			NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
+		Genome: NeatGenome{Genes: []neatGene{
+			neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
+			neatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
 		}},
 	}
 
@@ -412,14 +412,14 @@ func (s *NeatNeuralNetSuite) Test_Mate(c *C) {
 			Inputs:  []string{"i1", "i2", "i3", "i4"},
 			Outputs: []string{"o1", "o2"},
 		},
-		Genome: NeatGenome{Genes: []NeatGene{
-			NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 5, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
-			NeatGene{GeneId: 6, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
-			NeatGene{GeneId: 8, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i4", To: "o1", Weight: 1.5}, // Gene in just this neural net.
+		Genome: NeatGenome{Genes: []neatGene{
+			neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
+			neatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
+			neatGene{GeneId: 5, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
+			neatGene{GeneId: 6, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
+			neatGene{GeneId: 8, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i4", To: "o1", Weight: 1.5}, // Gene in just this neural net.
 		}},
 	}
 
@@ -429,14 +429,14 @@ func (s *NeatNeuralNetSuite) Test_Mate(c *C) {
 			Inputs:  []string{"i1", "i2", "i3", "i4"},
 			Outputs: []string{"o1", "o2"},
 		},
-		Genome: NeatGenome{Genes: []NeatGene{
-			NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 2.1},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 2.2}, // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 2.3},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 2.4},       // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 5, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
-			NeatGene{GeneId: 6, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
-			NeatGene{GeneId: 7, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE}, // Gene in just this neural net.
+		Genome: NeatGenome{Genes: []neatGene{
+			neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 2.1},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 2.2}, // Pick weight that can never be randomized to.
+			neatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 2.3},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 2.4},       // Pick weight that can never be randomized to.
+			neatGene{GeneId: 5, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
+			neatGene{GeneId: 6, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
+			neatGene{GeneId: 7, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE}, // Gene in just this neural net.
 		}},
 	}
 
@@ -455,9 +455,9 @@ func (s *NeatNeuralNetSuite) Test_Mate_UnorderedGenes(c *C) {
 			Inputs:  []string{"i1", "i2", "i3", "i4"},
 			Outputs: []string{"o1", "o2"},
 		},
-		Genome: NeatGenome{Genes: []NeatGene{
-			NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
+		Genome: NeatGenome{Genes: []neatGene{
+			neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
 		}},
 	}
 
@@ -467,9 +467,9 @@ func (s *NeatNeuralNetSuite) Test_Mate_UnorderedGenes(c *C) {
 			Inputs:  []string{"i1", "i2", "i3", "i4"},
 			Outputs: []string{"o1", "o2"},
 		},
-		Genome: NeatGenome{Genes: []NeatGene{
-			NeatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
+		Genome: NeatGenome{Genes: []neatGene{
+			neatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
+			neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
 		}},
 	}
 
@@ -489,11 +489,11 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_RandomizedClone(c *C) {
 			Inputs:  []string{"i1", "i2", "i3", "i4"},
 			Outputs: []string{"o1", "o2"},
 		},
-		Genome: NeatGenome{Genes: []NeatGene{
-			NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
-			NeatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
+		Genome: NeatGenome{Genes: []neatGene{
+			neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 1.1},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 2, IsEnabled: false, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "o2", Weight: 1.2}, // Pick weight that can never be randomized to.
+			neatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i3", To: "o1", Weight: 1.3},  // Pick weight that can never be randomized to.
+			neatGene{GeneId: 4, IsEnabled: true, Type: "SOMETHING_ELSE", From: "i4", To: "o2", Weight: 1.4},       // Pick weight that can never be randomized to.
 		}},
 	}
 
@@ -530,13 +530,13 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_Compute(c *C) {
 			Inputs:  []string{"i1", "i2"},
 			Outputs: []string{"o1", "o2"},
 		},
-		Genome: NeatGenome{Genes: []NeatGene{
-			NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 0.1},
-			NeatGene{GeneId: 2, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
-			NeatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "2", Weight: 0.25},
-			NeatGene{GeneId: 4, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "2", To: "o1", Weight: 0.4},
-			NeatGene{GeneId: 5, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "b", To: "2", Weight: 0.5},
-			NeatGene{GeneId: 6, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "b", To: "o2", Weight: 0.5},
+		Genome: NeatGenome{Genes: []neatGene{
+			neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 0.1},
+			neatGene{GeneId: 2, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
+			neatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "2", Weight: 0.25},
+			neatGene{GeneId: 4, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "2", To: "o1", Weight: 0.4},
+			neatGene{GeneId: 5, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "b", To: "2", Weight: 0.5},
+			neatGene{GeneId: 6, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "b", To: "o2", Weight: 0.5},
 		}},
 	}
 
@@ -572,14 +572,14 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_PrepareComputeTopology_CircularD
 			Inputs:  []string{"i1", "i2"},
 			Outputs: []string{"o1", "o2"},
 		},
-		Genome: NeatGenome{Genes: []NeatGene{
-			NeatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 0.1},
-			NeatGene{GeneId: 2, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
-			NeatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "2", Weight: 0.25},
-			NeatGene{GeneId: 4, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "2", To: "o1", Weight: 0.4},
-			NeatGene{GeneId: 5, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "b", To: "2", Weight: 0.5},
-			NeatGene{GeneId: 6, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "b", To: "o2", Weight: 0.5},
-			NeatGene{GeneId: 7, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "2", To: "2", Weight: 0.5}, // Circular dependency.
+		Genome: NeatGenome{Genes: []neatGene{
+			neatGene{GeneId: 1, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i1", To: "o1", Weight: 0.1},
+			neatGene{GeneId: 2, IsEnabled: true, Type: _GENE_TYPE_NODE, Function: ACTIVATION_INVERSE},
+			neatGene{GeneId: 3, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "i2", To: "2", Weight: 0.25},
+			neatGene{GeneId: 4, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "2", To: "o1", Weight: 0.4},
+			neatGene{GeneId: 5, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "b", To: "2", Weight: 0.5},
+			neatGene{GeneId: 6, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "b", To: "o2", Weight: 0.5},
+			neatGene{GeneId: 7, IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: "2", To: "2", Weight: 0.5}, // Circular dependency.
 		}},
 	}
 

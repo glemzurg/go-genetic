@@ -13,7 +13,7 @@ type sorterSimple struct {
 // NewSorterSimpleMaximize create a new simple sorter that will will sort descending
 // by (score + bonus) / (# members in species). Better bonuses should be larger numbers.
 // To keep a single species from taking over the populations, the larger the species, the worse the sort value.
-func NewSorterSimpleMaximize() *sorterSimple {
+func NewSorterSimpleMaximize() Sorter {
 	return &sorterSimple{
 		Maximize: true,
 	}
@@ -22,7 +22,7 @@ func NewSorterSimpleMaximize() *sorterSimple {
 // NewSorterSimple create a new simple sorter that will sort ascending by
 // (score + bonus) x (# members in species). Better bonuses should be smaller numbers, going negative if necessary.
 // To keep a single species from taking over the populations, the larger the species, the worse the sort value.
-func NewSorterSimpleMinimize() *sorterSimple {
+func NewSorterSimpleMinimize() Sorter {
 	return &sorterSimple{
 		Maximize: false,
 	}

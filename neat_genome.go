@@ -14,19 +14,19 @@ const (
 
 // NeatGenome is the genome of a NEAT neural net.
 type NeatGenome struct {
-	Genes []NeatGene
+	Genes []neatGene
 }
 
 // Clone makes a copy of this genome ensuring no data structure are shared.
 func (g *NeatGenome) Clone() (clone NeatGenome) {
 	clone = NeatGenome{}
-	clone.Genes = make([]NeatGene, len(g.Genes))
+	clone.Genes = make([]neatGene, len(g.Genes))
 	copy(clone.Genes, g.Genes)
 	return clone
 }
 
-// NeatGene is a single gene in a NeatGenome
-type NeatGene struct {
+// neatGene is a single gene in a NeatGenome
+type neatGene struct {
 	GeneId    uint64  // The unique (in an experiment) identity of this gene, shared by eventually many neural nets.
 	IsEnabled bool    // Genes can be disabled, but need to remain in order to compare ancestry of specimens.
 	Type      string  // The type of gene this is.
@@ -36,15 +36,15 @@ type NeatGene struct {
 	Function  string  // The activation function for node genes.
 }
 
-// ByGeneId implements sort.Interface to sort ascending by GeneId.
-// Example: sort.Sort(ByGeneId(genes))
-type ByGeneId []NeatGene
+// byGeneId implements sort.Interface to sort ascending by GeneId.
+// Example: sort.Sort(byGeneId(genes))
+type byGeneId []neatGene
 
-func (a ByGeneId) Len() int           { return len(a) }
-func (a ByGeneId) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByGeneId) Less(i, j int) bool { return a[i].GeneId < a[j].GeneId }
+func (a byGeneId) Len() int           { return len(a) }
+func (a byGeneId) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a byGeneId) Less(i, j int) bool { return a[i].GeneId < a[j].GeneId }
 
-// SpeciationDistance computes how related to NEAT genomes are (i.e. are they the same species?).
+// calculateSpeciationDistance computes how related to NEAT genomes are (i.e. are they the same species?).
 // The lower the distance, the more alike the genomes are and the closer they are to being the same
 // genome. Three constants C1, C2, C3 are used to configure what a particular experiment identifies
 // as important for determining species.
@@ -53,8 +53,8 @@ func (a ByGeneId) Less(i, j int) bool { return a[i].GeneId < a[j].GeneId }
 // A high configuration C2 gives more importance to disjoint genes (non-shared genes in either genome before the excess genes).
 // A high configuration C3 gives more importance to differences in shared genes.
 //
-// SpeciationDistances = C1 * (ExcessGeneCount / LargestGeneCount) + C2 * (DisjointGeneCount / LargestGeneCount) + C3 * AverageWeightDiffOfSharedGenes
-func SpeciationDistance(genomeA NeatGenome, genomeB NeatGenome, c1 float64, c2 float64, c3 float64) float64 {
+// speciation distance = C1 * (ExcessGeneCount / LargestGeneCount) + C2 * (DisjointGeneCount / LargestGeneCount) + C3 * AverageWeightDiffOfSharedGenes
+func calculateSpeciationDistance(genomeA NeatGenome, genomeB NeatGenome, c1 float64, c2 float64, c3 float64) float64 {
 	// Run a few sanity checks to ensure the code is working correctly.
 	var geneCountBefore int
 	var geneCountAfter int
@@ -74,8 +74,8 @@ func SpeciationDistance(genomeA NeatGenome, genomeB NeatGenome, c1 float64, c2 f
 	}
 
 	// Figure out which is the "longest" genome, the one with the most recent gene.
-	var lastA NeatGene = genomeA.Genes[len(genomeA.Genes)-1]
-	var lastB NeatGene = genomeB.Genes[len(genomeB.Genes)-1]
+	var lastA neatGene = genomeA.Genes[len(genomeA.Genes)-1]
+	var lastB neatGene = genomeB.Genes[len(genomeB.Genes)-1]
 
 	// Make one the older and one the younger genome.
 	// The younger genome is the one with more recent changes (higher gene ids).
@@ -88,20 +88,20 @@ func SpeciationDistance(genomeA NeatGenome, genomeB NeatGenome, c1 float64, c2 f
 
 	// From here on, we'll just be working with the gene slices.
 	// Make a copy of the genes so we don't alter the original genomes.
-	var youngerGenes []NeatGene = make([]NeatGene, len(youngerGenome.Genes))
+	var youngerGenes []neatGene = make([]neatGene, len(youngerGenome.Genes))
 	copy(youngerGenes, youngerGenome.Genes)
-	var olderGenes []NeatGene = make([]NeatGene, len(olderGenome.Genes))
+	var olderGenes []neatGene = make([]neatGene, len(olderGenome.Genes))
 	copy(olderGenes, olderGenome.Genes)
 
 	// Sanity check.
 	geneCountBefore = len(youngerGenes)
 
 	// Prune any excess genes from the younger genome, all genes more recent than the older genome.
-	var prunedYoungerGenes []NeatGene = youngerGenes // Assume no excess initially.
-	var excessGenes []NeatGene
+	var prunedYoungerGenes []neatGene = youngerGenes // Assume no excess initially.
+	var excessGenes []neatGene
 	// It's possible there are none. The two genomes may end on the same gene.
-	var highestOlderGene NeatGene = olderGenes[len(olderGenes)-1]
-	var highestYoungerGene NeatGene = youngerGenes[len(youngerGenes)-1]
+	var highestOlderGene neatGene = olderGenes[len(olderGenes)-1]
+	var highestYoungerGene neatGene = youngerGenes[len(youngerGenes)-1]
 	if highestYoungerGene.GeneId > highestOlderGene.GeneId {
 		// Find the first index of the younger genes higher than this gene id.
 		var higherIndex int = sort.Search(len(youngerGenes), func(i int) bool { return youngerGenes[i].GeneId > highestOlderGene.GeneId })
@@ -124,7 +124,7 @@ func SpeciationDistance(genomeA NeatGenome, genomeB NeatGenome, c1 float64, c2 f
 	geneCountBefore = len(prunedYoungerGenes) + len(olderGenes)
 
 	// Analyze the genes that could be in both older and younger for disjoint and average weigth.
-	var olderAndYoungerGenes []NeatGene
+	var olderAndYoungerGenes []neatGene
 	olderAndYoungerGenes = append(olderAndYoungerGenes, prunedYoungerGenes...)
 	olderAndYoungerGenes = append(olderAndYoungerGenes, olderGenes...)
 	// Build the counts we need to calculate the speciation distance.
@@ -132,7 +132,7 @@ func SpeciationDistance(genomeA NeatGenome, genomeB NeatGenome, c1 float64, c2 f
 	var weightSum float64
 	var weightContributors int
 	// Sort and loop through all the genes.
-	sort.Sort(ByGeneId(olderAndYoungerGenes))
+	sort.Sort(byGeneId(olderAndYoungerGenes))
 	var lastGeneIndex int = len(olderAndYoungerGenes) - 1
 	for i := 0; i < len(olderAndYoungerGenes); i++ {
 		// Is this gene solo (a dijoint gene), or back-to-back with a gene of the same id (a shared gene)?
@@ -141,8 +141,8 @@ func SpeciationDistance(genomeA NeatGenome, genomeB NeatGenome, c1 float64, c2 f
 			disjointGeneCount++
 		} else {
 			// There are genes following this gene. Take a peek.
-			var thisGene NeatGene = olderAndYoungerGenes[i]
-			var nextGene NeatGene = olderAndYoungerGenes[i+1]
+			var thisGene neatGene = olderAndYoungerGenes[i]
+			var nextGene neatGene = olderAndYoungerGenes[i+1]
 			// Are they the same gene?
 			if thisGene.GeneId == nextGene.GeneId {
 
@@ -178,11 +178,11 @@ func SpeciationDistance(genomeA NeatGenome, genomeB NeatGenome, c1 float64, c2 f
 	return speciationDistance
 }
 
-// IsSameSpecies wraps the speciation distance calculation with a threshold value that is the breaking point
+// isSameSpecies wraps the speciation distance calculation with a threshold value that is the breaking point
 // for when the distance is too large to be in the same species. If the threshold is 0.0, then all genomes are
 // expected to be part of one big species in the population (the feature is "turned off").
-func IsSameSpecies(genomeA NeatGenome, genomeB NeatGenome, config SpeciationConfig) (isSameSpecies bool, speciationDistance float64) {
-	speciationDistance = SpeciationDistance(genomeA, genomeB, config.C1, config.C2, config.C3)
+func isSameSpecies(genomeA NeatGenome, genomeB NeatGenome, config SpeciationConfig) (isSameSpecies bool, speciationDistance float64) {
+	speciationDistance = calculateSpeciationDistance(genomeA, genomeB, config.C1, config.C2, config.C3)
 	isSameSpecies = (config.Threshold == 0.0 || speciationDistance <= config.Threshold)
 	return isSameSpecies, speciationDistance
 }

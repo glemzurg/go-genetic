@@ -20,15 +20,15 @@ func newSpecies(specimen Specimen) Species {
 
 // AddSpecimen adds a single member of the species, return true if it was added.
 func (s *Species) AddSpecimen(specimen Specimen, config SpeciationConfig) (wasAdded bool) {
-	var isSameSpecies bool
+	var isSpecies bool
 	var speciationDistance float64
-	if isSameSpecies, speciationDistance = IsSameSpecies(s.genome, specimen.NeuralNet.Genome, config); isSameSpecies {
+	if isSpecies, speciationDistance = isSameSpecies(s.genome, specimen.NeuralNet.Genome, config); isSpecies {
 		// This specimen is a member of this species.
 		// Stamp the speciation distance on them and add them.
 		specimen.SpeciationDistance = speciationDistance
 		s.Specimens = append(s.Specimens, specimen)
 	}
-	return isSameSpecies
+	return isSpecies
 }
 
 // pickSpecimen picks the specimen from the species if it is in the species. Returns false if not found.

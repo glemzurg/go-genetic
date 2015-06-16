@@ -39,7 +39,7 @@ func (n *topologicalNode) addSink(node string, weight float64) {
 // All input errors will panic except circular dependencies. All inputs should be sanitized by the time they reach
 // this code, but the circular dependencies can be made by random mutation of connections. For circular dependencies,
 // ok will be false.
-func makeComputeTopology(inOut NeuralNetInOut, genes []NeatGene) (compute computeTopology, noCircular bool) {
+func makeComputeTopology(inOut NeuralNetInOut, genes []neatGene) (compute computeTopology, noCircular bool) {
 	var ok bool
 
 	// Create a map of all the nodes and inputs to them.
