@@ -1,7 +1,7 @@
 package genetic
 
-// Species is a collection of specimens deemed to be alike due to similarities in their genomes.
-type Species struct {
+// genSpecies is a collection of specimens deemed to be alike due to similarities in their genomes.
+type genSpecies struct {
 	genome               neatGenome
 	Specimens            []Specimen
 	firstPopulationIndex int // The index of the first specimen, as if all population specimens were in one slice.
@@ -9,8 +9,8 @@ type Species struct {
 }
 
 // newSpecies creates a well-formed species of the population.
-func newSpecies(specimen Specimen) Species {
-	return Species{
+func newSpecies(specimen Specimen) genSpecies {
+	return genSpecies{
 		// The species will have the identiy genome of the specimen.
 		// Make a copy of the genes so it is not tethered to the specimen itself.
 		genome:    specimen.NeuralNet.Genome.Clone(),
@@ -19,7 +19,7 @@ func newSpecies(specimen Specimen) Species {
 }
 
 // AddSpecimen adds a single member of the species, return true if it was added.
-func (s *Species) AddSpecimen(specimen Specimen, config SpeciationConfig) (wasAdded bool) {
+func (s *genSpecies) AddSpecimen(specimen Specimen, config ConfigSpeciation) (wasAdded bool) {
 	var isSpecies bool
 	var speciationDistance float64
 	if isSpecies, speciationDistance = isSameSpecies(s.genome, specimen.NeuralNet.Genome, config); isSpecies {
@@ -32,7 +32,7 @@ func (s *Species) AddSpecimen(specimen Specimen, config SpeciationConfig) (wasAd
 }
 
 // pickSpecimen picks the specimen from the species if it is in the species. Returns false if not found.
-func (s *Species) pickSpecimen(populationSpecimenIndex int) (specimen Specimen, speciesSpecimens []Specimen, specimenIndex int, wasFound bool) {
+func (s *genSpecies) pickSpecimen(populationSpecimenIndex int) (specimen Specimen, speciesSpecimens []Specimen, specimenIndex int, wasFound bool) {
 
 	// If this index is not in species, return that we didn't find anything.
 	if populationSpecimenIndex < s.firstPopulationIndex || populationSpecimenIndex > s.lastPopulationIndex {
@@ -60,7 +60,7 @@ func (s *Species) pickSpecimen(populationSpecimenIndex int) (specimen Specimen, 
 }
 
 // WeightSpecies adds to the specimens enough information to weigh by species in scoring.
-func (s *Species) WeightSpecies() {
+func (s *genSpecies) WeightSpecies() {
 
 	// How many specimens are there?
 	var specimenCount int = len(s.Specimens)

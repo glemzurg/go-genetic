@@ -197,7 +197,7 @@ func (s *neatGenomeSuite) Test_CalculateSpeciationDistance(c *C) {
 func (s *neatGenomeSuite) Test_IsSameSpecies(c *C) {
 
 	// Create a sample configuration.
-	var config SpeciationConfig = SpeciationConfig{
+	var config ConfigSpeciation = ConfigSpeciation{
 		Threshold: 0.0,
 		C1:        1.0, // Emphasies the longer tail of the younger genome.
 		C2:        0.0,

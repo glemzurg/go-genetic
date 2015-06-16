@@ -181,7 +181,7 @@ func calculateSpeciationDistance(genomeA neatGenome, genomeB neatGenome, c1 floa
 // isSameSpecies wraps the speciation distance calculation with a threshold value that is the breaking point
 // for when the distance is too large to be in the same species. If the threshold is 0.0, then all genomes are
 // expected to be part of one big species in the population (the feature is "turned off").
-func isSameSpecies(genomeA neatGenome, genomeB neatGenome, config SpeciationConfig) (isSameSpecies bool, speciationDistance float64) {
+func isSameSpecies(genomeA neatGenome, genomeB neatGenome, config ConfigSpeciation) (isSameSpecies bool, speciationDistance float64) {
 	speciationDistance = calculateSpeciationDistance(genomeA, genomeB, config.C1, config.C2, config.C3)
 	isSameSpecies = (config.Threshold == 0.0 || speciationDistance <= config.Threshold)
 	return isSameSpecies, speciationDistance

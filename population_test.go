@@ -21,8 +21,8 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_NoSpeciesYet(c *C) {
 	var genomeA neatGenome = gnm([]gn{gn{1, 0.2}})
 
 	// Use a config that will be easy to study withs species.
-	var config PopulationConfig = PopulationConfig{
-		Speciation: SpeciationConfig{
+	var config ConfigPopulation = ConfigPopulation{
+		Speciation: ConfigSpeciation{
 			Threshold: 0.5, // One longer tail should be enough to indicate the genomes are not the same species.
 			C1:        1.0, // Emphasies the longer tail of the younger genome.
 			C2:        0.0,
@@ -39,8 +39,8 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_NoSpeciesYet(c *C) {
 	population.AddNeuralNet(NeatNeuralNet{Genome: genomeA}, 10.0, 100.0, []float64{1.0, 2.0})
 	expectedPopulation = generationPopulation{
 		config: config,
-		species: []Species{
-			Species{
+		species: []genSpecies{
+			genSpecies{
 				genome: genomeA, // Species has the identity genome of the first member.
 				Specimens: []Specimen{
 					Specimen{
@@ -83,8 +83,8 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_MatchingSpecies(c *C) {
 	var genomeB neatGenome = gnm([]gn{gn{0, 0.0}, gn{2, 0.4}})
 
 	// Use a config that will be easy to study withs species.
-	var config PopulationConfig = PopulationConfig{
-		Speciation: SpeciationConfig{
+	var config ConfigPopulation = ConfigPopulation{
+		Speciation: ConfigSpeciation{
 			Threshold: 0.5, // One longer tail should be enough to indicate the genomes are not the same species.
 			C1:        1.0, // Emphasies the longer tail of the younger genome.
 			C2:        0.0,
@@ -94,26 +94,26 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_MatchingSpecies(c *C) {
 
 	// Population is a new population with no species.
 	population = newPopulation(config)
-	population.species = append(population.species, Species{genome: genomeB})
-	population.species = append(population.species, Species{genome: genomeA}) // The matching genome is second.
-	population.species = append(population.species, Species{genome: genomeA}) // Another matching genome is third.
+	population.species = append(population.species, genSpecies{genome: genomeB})
+	population.species = append(population.species, genSpecies{genome: genomeA}) // The matching genome is second.
+	population.species = append(population.species, genSpecies{genome: genomeA}) // Another matching genome is third.
 
 	// Add a specimen, will with match the second species.
 	population.AddNeuralNet(NeatNeuralNet{Genome: genomeA}, 0.0, 0.0, nil)
 	expectedPopulation = generationPopulation{
 		config: config,
-		species: []Species{
-			Species{
+		species: []genSpecies{
+			genSpecies{
 				genome:    genomeB, // The specimen doesn't match this species.
 				Specimens: nil,
 			},
-			Species{
+			genSpecies{
 				genome: genomeA, // The specimen does match this one.
 				Specimens: []Specimen{
 					Specimen{NeuralNet: NeatNeuralNet{Genome: genomeA}},
 				},
 			},
-			Species{
+			genSpecies{
 				genome:    genomeA, // The specimen would match this species, but was already placed in a species.
 				Specimens: nil,
 			},
@@ -131,8 +131,8 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_NoMatchingSpecies(c *C) {
 	var genomeB neatGenome = gnm([]gn{gn{0, 0.0}, gn{2, 0.4}})
 
 	// Use a config that will be easy to study withs species.
-	var config PopulationConfig = PopulationConfig{
-		Speciation: SpeciationConfig{
+	var config ConfigPopulation = ConfigPopulation{
+		Speciation: ConfigSpeciation{
 			Threshold: 0.5, // One longer tail should be enough to indicate the genomes are not the same species.
 			C1:        1.0, // Emphasies the longer tail of the younger genome.
 			C2:        0.0,
@@ -142,18 +142,18 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_NoMatchingSpecies(c *C) {
 
 	// Population is a new population with no species.
 	population = newPopulation(config)
-	population.species = append(population.species, Species{genome: genomeB}) // Won't match this species.
+	population.species = append(population.species, genSpecies{genome: genomeB}) // Won't match this species.
 
 	// Add a specimen, will with match the second species.
 	population.AddNeuralNet(NeatNeuralNet{Genome: genomeA}, 0.0, 0.0, nil)
 	expectedPopulation = generationPopulation{
 		config: config,
-		species: []Species{
-			Species{
+		species: []genSpecies{
+			genSpecies{
 				genome:    genomeB, // The specimen doesn't match this species.
 				Specimens: nil,
 			},
-			Species{
+			genSpecies{
 				genome: genomeA, // This new species was added.
 				Specimens: []Specimen{
 					Specimen{NeuralNet: NeatNeuralNet{Genome: genomeA}},

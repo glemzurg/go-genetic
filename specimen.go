@@ -40,10 +40,10 @@ func newSpecimen(neuralNet NeatNeuralNet, score float64, bonus float64, outcomes
 // setSelectionScore updates the selection score for the specimen.
 func (s *Specimen) setSelectionScore(selectionScore float64) { s.SelectionScore = selectionScore }
 
-// MateMutate produces another Specimen by modifying this specimen. It could be a mutated version or a child
+// mateMutate produces another Specimen by modifying this specimen. It could be a mutated version or a child
 // from mating. Mating can only be done with other members of the species. specimenIndex is this specimens index
 // in the list (don't want to mate with self).
-func (s *Specimen) MateMutate(speciesSpecimens []Specimen, specimenIndex int, config MutateConfig) Specimen {
+func (s *Specimen) mateMutate(speciesSpecimens []Specimen, specimenIndex int, config ConfigMutate) Specimen {
 
 	// Get the weights.
 	var mateWeight uint = config.MateWeight

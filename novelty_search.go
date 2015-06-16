@@ -28,7 +28,7 @@ func NewNoveltySearchTally(maxFingerprints int) NoveltySearchTally {
 	}
 }
 
-// Seen indicates how many times we've seen this particular fingerprint, including this one.
+// Seen indicates how many times we've seen this particular fingerprint, including this time.
 func (n *NoveltySearchTally) Seen(fingerprint string) int {
 	// Has this fingerprint been seen already?
 	var ok bool

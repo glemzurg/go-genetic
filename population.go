@@ -7,12 +7,12 @@ import (
 
 // generationPopulation is all the specimens of a single generation.
 type generationPopulation struct {
-	config  PopulationConfig
-	species []Species
+	config  ConfigPopulation
+	species []genSpecies
 }
 
 // newPopulation creates a well-formed Population, ready for specimens to be added.
-func newPopulation(config PopulationConfig) generationPopulation {
+func newPopulation(config ConfigPopulation) generationPopulation {
 	return generationPopulation{config: config}
 }
 
@@ -62,7 +62,7 @@ func (p *generationPopulation) FillOut() {
 		specimen, speciesSpecimens, specimenIndex = p.randomSpecimen(specimenCount)
 
 		// Create a new specimen from an random change of this one.
-		var mutant Specimen = specimen.MateMutate(speciesSpecimens, specimenIndex, p.config.Mutate)
+		var mutant Specimen = specimen.mateMutate(speciesSpecimens, specimenIndex, p.config.Mutate)
 		newSpecimens = append(newSpecimens, mutant)
 	}
 
@@ -176,7 +176,7 @@ func (p *generationPopulation) AddAllSpecimens(specimens []Specimen) {
 // PruneEmptySpecies removes any species that has no more specimens.
 func (p *generationPopulation) PruneEmptySpecies() {
 	// Preserve order of species. Matters to keep specimens always categorizing into the same species every generation.
-	var speciesToKeep []Species
+	var speciesToKeep []genSpecies
 	for _, species := range p.species {
 		if len(species.Specimens) > 0 {
 			speciesToKeep = append(speciesToKeep, species)
