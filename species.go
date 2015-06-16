@@ -2,7 +2,7 @@ package genetic
 
 // Species is a collection of specimens deemed to be alike due to similarities in their genomes.
 type Species struct {
-	genome               NeatGenome
+	genome               neatGenome
 	Specimens            []Specimen
 	firstPopulationIndex int // The index of the first specimen, as if all population specimens were in one slice.
 	lastPopulationIndex  int // The index of the last specimen, as if all population specimens were in one slice.

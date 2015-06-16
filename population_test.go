@@ -18,7 +18,7 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_NoSpeciesYet(c *C) {
 	var expectedPopulation Population
 
 	// We'll need a few genomes for this test.
-	var genomeA NeatGenome = gnm([]gn{gn{1, 0.2}})
+	var genomeA neatGenome = gnm([]gn{gn{1, 0.2}})
 
 	// Use a config that will be easy to study withs species.
 	var config PopulationConfig = PopulationConfig{
@@ -79,8 +79,8 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_MatchingSpecies(c *C) {
 	var expectedPopulation Population
 
 	// We have two genomes that compute to a speciation distance of 1.0 (with the constants we're using)
-	var genomeA NeatGenome = gnm([]gn{gn{1, 0.2}})
-	var genomeB NeatGenome = gnm([]gn{gn{0, 0.0}, gn{2, 0.4}})
+	var genomeA neatGenome = gnm([]gn{gn{1, 0.2}})
+	var genomeB neatGenome = gnm([]gn{gn{0, 0.0}, gn{2, 0.4}})
 
 	// Use a config that will be easy to study withs species.
 	var config PopulationConfig = PopulationConfig{
@@ -127,8 +127,8 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_NoMatchingSpecies(c *C) {
 	var expectedPopulation Population
 
 	// We have two genomes that compute to a speciation distance of 1.0 (with the constants we're using)
-	var genomeA NeatGenome = gnm([]gn{gn{1, 0.2}})
-	var genomeB NeatGenome = gnm([]gn{gn{0, 0.0}, gn{2, 0.4}})
+	var genomeA neatGenome = gnm([]gn{gn{1, 0.2}})
+	var genomeB neatGenome = gnm([]gn{gn{0, 0.0}, gn{2, 0.4}})
 
 	// Use a config that will be easy to study withs species.
 	var config PopulationConfig = PopulationConfig{

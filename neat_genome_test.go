@@ -5,14 +5,14 @@ import (
 )
 
 // Create a suite.
-type NeatGenomeSuite struct{}
+type neatGenomeSuite struct{}
 
-var _ = Suite(&NeatGenomeSuite{})
+var _ = Suite(&neatGenomeSuite{})
 
 // Add the tests.
 
-func (s *NeatGenomeSuite) Test_CalculateSpeciationDistance(c *C) {
-	var genomeA, genomeB NeatGenome
+func (s *neatGenomeSuite) Test_CalculateSpeciationDistance(c *C) {
+	var genomeA, genomeB neatGenome
 	var expectedDistance float64
 
 	// SpeciationDistance = C1  * (Excess/Longest) + C2  * (Disjoint/Longest) + C3  * AverageWeightDiff
@@ -194,7 +194,7 @@ func (s *NeatGenomeSuite) Test_CalculateSpeciationDistance(c *C) {
 	c.Assert(calculateSpeciationDistance(genomeB, genomeA, 1.0, 2.0, 3.0), Equals, expectedDistance)
 }
 
-func (s *NeatGenomeSuite) Test_IsSameSpecies(c *C) {
+func (s *neatGenomeSuite) Test_IsSameSpecies(c *C) {
 
 	// Create a sample configuration.
 	var config SpeciationConfig = SpeciationConfig{
@@ -209,8 +209,8 @@ func (s *NeatGenomeSuite) Test_IsSameSpecies(c *C) {
 	var speciationDistance float64
 
 	// We have two genomes that compute to a speciation distance of 1.0 (with the constants we're using)
-	var genomeA NeatGenome = gnm([]gn{gn{1, 0.2}})
-	var genomeB NeatGenome = gnm([]gn{gn{0, 0.0}, gn{2, 0.4}})
+	var genomeA neatGenome = gnm([]gn{gn{1, 0.2}})
+	var genomeB neatGenome = gnm([]gn{gn{0, 0.0}, gn{2, 0.4}})
 
 	// Set the threshold so they are in the same species.
 	config.Threshold = 1.0
@@ -253,7 +253,7 @@ type gn struct {
 }
 
 // Create a genome for testing from minimal genes.
-func gnm(minimalGenes []gn) (genome NeatGenome) {
+func gnm(minimalGenes []gn) (genome neatGenome) {
 	// Only create the data meaningful for calculating speciation distance.
 	for _, minimalGene := range minimalGenes {
 		if minimalGene.GeneId != 0 {

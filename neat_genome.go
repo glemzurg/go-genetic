@@ -12,20 +12,20 @@ const (
 	_GENE_TYPE_NODE       = "node"
 )
 
-// NeatGenome is the genome of a NEAT neural net.
-type NeatGenome struct {
+// neatGenome is the genome of a NEAT neural net.
+type neatGenome struct {
 	Genes []neatGene
 }
 
 // Clone makes a copy of this genome ensuring no data structure are shared.
-func (g *NeatGenome) Clone() (clone NeatGenome) {
-	clone = NeatGenome{}
+func (g *neatGenome) Clone() (clone neatGenome) {
+	clone = neatGenome{}
 	clone.Genes = make([]neatGene, len(g.Genes))
 	copy(clone.Genes, g.Genes)
 	return clone
 }
 
-// neatGene is a single gene in a NeatGenome
+// neatGene is a single gene in a neatGenome
 type neatGene struct {
 	GeneId    uint64  // The unique (in an experiment) identity of this gene, shared by eventually many neural nets.
 	IsEnabled bool    // Genes can be disabled, but need to remain in order to compare ancestry of specimens.
@@ -54,7 +54,7 @@ func (a byGeneId) Less(i, j int) bool { return a[i].GeneId < a[j].GeneId }
 // A high configuration C3 gives more importance to differences in shared genes.
 //
 // speciation distance = C1 * (ExcessGeneCount / LargestGeneCount) + C2 * (DisjointGeneCount / LargestGeneCount) + C3 * AverageWeightDiffOfSharedGenes
-func calculateSpeciationDistance(genomeA NeatGenome, genomeB NeatGenome, c1 float64, c2 float64, c3 float64) float64 {
+func calculateSpeciationDistance(genomeA neatGenome, genomeB neatGenome, c1 float64, c2 float64, c3 float64) float64 {
 	// Run a few sanity checks to ensure the code is working correctly.
 	var geneCountBefore int
 	var geneCountAfter int
@@ -79,8 +79,8 @@ func calculateSpeciationDistance(genomeA NeatGenome, genomeB NeatGenome, c1 floa
 
 	// Make one the older and one the younger genome.
 	// The younger genome is the one with more recent changes (higher gene ids).
-	var youngerGenome NeatGenome = genomeA
-	var olderGenome NeatGenome = genomeB
+	var youngerGenome neatGenome = genomeA
+	var olderGenome neatGenome = genomeB
 	if lastB.GeneId > lastA.GeneId {
 		youngerGenome = genomeB
 		olderGenome = genomeA
@@ -181,7 +181,7 @@ func calculateSpeciationDistance(genomeA NeatGenome, genomeB NeatGenome, c1 floa
 // isSameSpecies wraps the speciation distance calculation with a threshold value that is the breaking point
 // for when the distance is too large to be in the same species. If the threshold is 0.0, then all genomes are
 // expected to be part of one big species in the population (the feature is "turned off").
-func isSameSpecies(genomeA NeatGenome, genomeB NeatGenome, config SpeciationConfig) (isSameSpecies bool, speciationDistance float64) {
+func isSameSpecies(genomeA neatGenome, genomeB neatGenome, config SpeciationConfig) (isSameSpecies bool, speciationDistance float64) {
 	speciationDistance = calculateSpeciationDistance(genomeA, genomeB, config.C1, config.C2, config.C3)
 	isSameSpecies = (config.Threshold == 0.0 || speciationDistance <= config.Threshold)
 	return isSameSpecies, speciationDistance

@@ -12,7 +12,7 @@ import (
 // It is also not necessary to attempt to structure their insides.
 type NeatNeuralNet struct {
 	InOut    NeuralNetInOut
-	Genome   NeatGenome
+	Genome   neatGenome
 	topology computeTopology
 }
 
@@ -264,15 +264,15 @@ func (c *NeatNeuralNet) MutateChangeConnectionWeight() {
 	c.Genome.Genes[geneIndex].Weight = rand.Float64() // 0.0 to 1.0. Actually will never by 1.0 but will be less than 1.0.
 }
 
-// Mate mates two neural nets to create a new offspring. The structure of the child's genome is the genome of the fitter parent
+// mate mates two neural nets to create a new offspring. The structure of the child's genome is the genome of the fitter parent
 // (so the hidden nodes in the child will be the hidden nodes of the fitter parent). For every enabled connection gene
 // shared between the two parents, the connection weight will be randomly picked from one or the other. If no genes
 // are modified (a possibility), the child will be identical to the fitter parent.
-func Mate(fitterParent NeatNeuralNet, otherParent NeatNeuralNet) (child NeatNeuralNet) {
+func mate(fitterParent NeatNeuralNet, otherParent NeatNeuralNet) (child NeatNeuralNet) {
 	// Start the child from the parent.
 	child = NeatNeuralNet{
 		InOut:  fitterParent.InOut, // in/out is fixed for an experiment so not a problem if it gets cross referenced in anyway.
-		Genome: NeatGenome{},
+		Genome: neatGenome{},
 	}
 
 	// Get the genomes we are working with.
@@ -330,7 +330,7 @@ func (c *NeatNeuralNet) Clone() (clone NeatNeuralNet) {
 func (c *NeatNeuralNet) RandomizedClone() (clone NeatNeuralNet) {
 	clone = NeatNeuralNet{
 		InOut:  c.InOut, // in/out is fixed for an experiment so not a problem if it gets cross referenced in anyway.
-		Genome: NeatGenome{},
+		Genome: neatGenome{},
 	}
 	// The genomes need to be copied/modified one at a time and referentially distinct between the neural nets.
 	for _, origGene := range c.Genome.Genes {

@@ -65,7 +65,7 @@ func (s *Specimen) MateMutate(speciesSpecimens []Specimen, specimenIndex int, co
 		// Pick another member of the species to mate with.
 		var fitterParent Specimen = *s // Assume this is the fitter parent.
 		var otherParent Specimen = randomSpecimenWithSkip(speciesSpecimens, specimenIndex)
-		newNeuralNet = Mate(fitterParent.NeuralNet, otherParent.NeuralNet)
+		newNeuralNet = mate(fitterParent.NeuralNet, otherParent.NeuralNet)
 
 	case _CHANGE_MUTATE_ADD_NODE:
 		newNeuralNet = s.NeuralNet.Clone()
