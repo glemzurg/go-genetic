@@ -68,20 +68,20 @@ func (s *Specimen) MateMutate(speciesSpecimens []Specimen, specimenIndex int, co
 		newNeuralNet = mate(fitterParent.NeuralNet, otherParent.NeuralNet)
 
 	case _CHANGE_MUTATE_ADD_NODE:
-		newNeuralNet = s.NeuralNet.Clone()
-		newNeuralNet.MutateAddNode(config.AvailableNodeFunctions)
+		newNeuralNet = s.NeuralNet.makeClone()
+		newNeuralNet.mutateAddNode(config.AvailableNodeFunctions)
 
 	case _CHANGE_MUTATE_ADD_CONNECTION:
-		newNeuralNet = s.NeuralNet.Clone()
+		newNeuralNet = s.NeuralNet.makeClone()
 		var added bool
-		if added = newNeuralNet.MutateAddConnection(config.MaxAddConnectionAttempts); !added {
+		if added = newNeuralNet.mutateAddConnection(config.MaxAddConnectionAttempts); !added {
 			// If we didn't succesfully add a connection, fall back to just altering a connection weight.
-			newNeuralNet.MutateChangeConnectionWeight()
+			newNeuralNet.mutateChangeConnectionWeight()
 		}
 
 	case _CHANGE_MUTATE_ALTER_CONNECTION:
-		newNeuralNet = s.NeuralNet.Clone()
-		newNeuralNet.MutateChangeConnectionWeight()
+		newNeuralNet = s.NeuralNet.makeClone()
+		newNeuralNet.mutateChangeConnectionWeight()
 
 	default:
 		log.Panicf("Unknown change type: %d", changeType)

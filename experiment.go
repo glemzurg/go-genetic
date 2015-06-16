@@ -58,8 +58,8 @@ func RunExperiment(experimentName string, config Config, sorter Sorter, selector
 	// Create an initial neural net that will seed the population, creating
 	// a single specimen in a single species. In the first generation, this neural net will
 	// be mutated into a full population through the normal mechanism to fill out a generation.
-	var population Population = NewPopulation(experiment.config.Population)
-	var neuralNet NeatNeuralNet = NewNeatNeuralNet(experiment.config.NeuralNetInOut)
+	var population generationPopulation = newPopulation(experiment.config.Population)
+	var neuralNet NeatNeuralNet = newNeatNeuralNet(experiment.config.NeuralNetInOut)
 	population.AddNeuralNet(neuralNet, 0.0, 0.0, nil) // The specimen has no scores.
 
 	// Keep track if this experiment becomes stagnant (fitness never improving).
@@ -304,7 +304,7 @@ func (e *geneticExperiment) recordStart() {
 }
 
 // recordGeneration records details of a single generation of the experiment.
-func (e *geneticExperiment) recordGeneration(generationNum uint64, bestExperimentScore float64, stagnantGenerationCount uint64, best string, population Population) {
+func (e *geneticExperiment) recordGeneration(generationNum uint64, bestExperimentScore float64, stagnantGenerationCount uint64, best string, population generationPopulation) {
 	var err error
 
 	// Get generation details from the scorer.
@@ -392,7 +392,7 @@ func (e *geneticExperiment) recordGeneration(generationNum uint64, bestExperimen
 }
 
 // recordEnd records details about the experiment after it ends.
-func (e *geneticExperiment) recordEnd(generationNum uint64, endReason string, population Population) {
+func (e *geneticExperiment) recordEnd(generationNum uint64, endReason string, population generationPopulation) {
 	var err error
 
 	// Get the population as json.

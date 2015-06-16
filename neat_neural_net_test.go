@@ -28,7 +28,7 @@ func (s *NeatNeuralNetSuite) Test_NewNeatNeuralNet(c *C) {
 	}
 
 	// Make a new neural net.
-	var neuralNet NeatNeuralNet = NewNeatNeuralNet(inOut)
+	var neuralNet NeatNeuralNet = newNeatNeuralNet(inOut)
 
 	// The contents are random. Just inspect it with a test.
 	c.Assert(neuralNet, Equals, "unpredictable")
@@ -289,7 +289,7 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_MutateAddNode(c *C) {
 	}
 
 	// Mutate the neural net.
-	neuralNet.MutateAddNode([]string{ACTIVATION_BIPOLAR_SIGMOID, ACTIVATION_INVERSE, ACTIVATION_SINE})
+	neuralNet.mutateAddNode([]string{ACTIVATION_BIPOLAR_SIGMOID, ACTIVATION_INVERSE, ACTIVATION_SINE})
 
 	// The contents are random. Just inspect it with a test.
 	c.Assert(neuralNet, Equals, "unpredictable")
@@ -312,8 +312,8 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_MutateAddNode_NoActivationFuncti
 	}
 
 	// Invalid parameters.
-	c.Check(func() { neuralNet.MutateAddNode(nil) }, Panics, `Available functions must be defined to mutetate add node.`)
-	c.Check(func() { neuralNet.MutateAddNode([]string{}) }, Panics, `Available functions must be defined to mutetate add node.`)
+	c.Check(func() { neuralNet.mutateAddNode(nil) }, Panics, `Available functions must be defined to mutetate add node.`)
+	c.Check(func() { neuralNet.mutateAddNode([]string{}) }, Panics, `Available functions must be defined to mutetate add node.`)
 }
 
 func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_MutateAddConnection(c *C) {
@@ -341,7 +341,7 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_MutateAddConnection(c *C) {
 	setMaxGeneId(6)
 
 	// Mutate the neural net.
-	var wasAdded bool = neuralNet.MutateAddConnection(1)
+	var wasAdded bool = neuralNet.mutateAddConnection(1)
 
 	// The contents are random. Just inspect it with a test.
 	c.Assert(wasAdded, Equals, true)
@@ -372,7 +372,7 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_MutateChangeConnectionWeight(c *
 	}
 
 	// Mutate the neural net.
-	neuralNet.MutateChangeConnectionWeight()
+	neuralNet.mutateChangeConnectionWeight()
 
 	// The contents are random. Just inspect it with a test.
 	c.Assert(neuralNet, Equals, "unpredictable")
@@ -395,8 +395,8 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_MutateAddConnection_NoMaxAttempt
 	}
 
 	// Invalid parameters.
-	c.Check(func() { neuralNet.MutateAddConnection(0) }, Panics, `Must have a 1 or more max attempts to mutate add connection, not: 0`)
-	c.Check(func() { neuralNet.MutateAddConnection(-1) }, Panics, `Must have a 1 or more max attempts to mutate add connection, not: -1`)
+	c.Check(func() { neuralNet.mutateAddConnection(0) }, Panics, `Must have a 1 or more max attempts to mutate add connection, not: 0`)
+	c.Check(func() { neuralNet.mutateAddConnection(-1) }, Panics, `Must have a 1 or more max attempts to mutate add connection, not: -1`)
 }
 
 func (s *NeatNeuralNetSuite) Test_Mate(c *C) {
@@ -498,7 +498,7 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_RandomizedClone(c *C) {
 	}
 
 	// Create a randomized clone.
-	var clone NeatNeuralNet = neuralNet.RandomizedClone()
+	var clone NeatNeuralNet = neuralNet.randomizedClone()
 
 	// The clone and original share the same inputs and outputs.
 	c.Assert(clone.InOut, DeepEquals, neuralNet.InOut)
@@ -584,5 +584,5 @@ func (s *NeatNeuralNetSuite) Test_NeatNeuralNet_PrepareComputeTopology_CircularD
 	}
 
 	//  Attempting to compute before preparing compute topology will fail.
-	c.Check(func() { neuralNet.PrepareComputeTopology() }, Panics, `Neural net has a circular dependency in Genome: [{GeneId:1 IsEnabled:true Type:connection From:i1 To:o1 Weight:0.1 Function:} {GeneId:2 IsEnabled:true Type:node From: To: Weight:0 Function:inverse} {GeneId:3 IsEnabled:true Type:connection From:i2 To:2 Weight:0.25 Function:} {GeneId:4 IsEnabled:true Type:connection From:2 To:o1 Weight:0.4 Function:} {GeneId:5 IsEnabled:true Type:connection From:b To:2 Weight:0.5 Function:} {GeneId:6 IsEnabled:true Type:connection From:b To:o2 Weight:0.5 Function:} {GeneId:7 IsEnabled:true Type:connection From:2 To:2 Weight:0.5 Function:}]`)
+	c.Check(func() { neuralNet.prepareComputeTopology() }, Panics, `Neural net has a circular dependency in Genome: [{GeneId:1 IsEnabled:true Type:connection From:i1 To:o1 Weight:0.1 Function:} {GeneId:2 IsEnabled:true Type:node From: To: Weight:0 Function:inverse} {GeneId:3 IsEnabled:true Type:connection From:i2 To:2 Weight:0.25 Function:} {GeneId:4 IsEnabled:true Type:connection From:2 To:o1 Weight:0.4 Function:} {GeneId:5 IsEnabled:true Type:connection From:b To:2 Weight:0.5 Function:} {GeneId:6 IsEnabled:true Type:connection From:b To:o2 Weight:0.5 Function:} {GeneId:7 IsEnabled:true Type:connection From:2 To:2 Weight:0.5 Function:}]`)
 }

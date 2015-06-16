@@ -5,26 +5,26 @@ import (
 	"math/rand"
 )
 
-// Population is all the specimens of a single generation.
-type Population struct {
+// generationPopulation is all the specimens of a single generation.
+type generationPopulation struct {
 	config  PopulationConfig
 	species []Species
 }
 
-// NewPopulation creates a well-formed Population, ready for specimens to be added.
-func NewPopulation(config PopulationConfig) Population {
-	return Population{config: config}
+// newPopulation creates a well-formed Population, ready for specimens to be added.
+func newPopulation(config PopulationConfig) generationPopulation {
+	return generationPopulation{config: config}
 }
 
 // AddNeuralNet adds a single member of the population, putting it into the appropriate species.
-func (p *Population) AddNeuralNet(neuralNet NeatNeuralNet, score float64, bonus float64, outcomes []float64) {
+func (p *generationPopulation) AddNeuralNet(neuralNet NeatNeuralNet, score float64, bonus float64, outcomes []float64) {
 	// Wrap this neural net as a specimen.
 	var specimen Specimen = newSpecimen(neuralNet, score, bonus, outcomes)
 	p.AddSpecimen(specimen)
 }
 
 // AddSpecimen adds a single member of the population, putting it into the appropriate species.
-func (p *Population) AddSpecimen(specimen Specimen) {
+func (p *generationPopulation) AddSpecimen(specimen Specimen) {
 
 	// Add this specimen to the first species it is related to.
 	// If it is related to none, then create a new species.
@@ -43,7 +43,7 @@ func (p *Population) AddSpecimen(specimen Specimen) {
 }
 
 // FillOut grows the population from the fittest of last generation to a full population by mutation and mating.
-func (p *Population) FillOut() {
+func (p *generationPopulation) FillOut() {
 
 	// Prepare the species for pulling random specimens.
 	var specimenCount int = p.prepareRandomSpecimenIndexes()
@@ -73,7 +73,7 @@ func (p *Population) FillOut() {
 }
 
 // prepareRandomSpecimenIndexes prepares species with indexes allowing random specimens to be picked.
-func (p *Population) prepareRandomSpecimenIndexes() (specimenCount int) {
+func (p *generationPopulation) prepareRandomSpecimenIndexes() (specimenCount int) {
 
 	// How many specimens are there? This population has been pruned of dead weight. We don't know how many
 	// specimens there currently are or what species they are in. Calculate some indexes that would be true
@@ -111,7 +111,7 @@ func (p *Population) prepareRandomSpecimenIndexes() (specimenCount int) {
 }
 
 // randomSpecimen picks a random specimen from a population with enough supporting data to mate if necessary.
-func (p *Population) randomSpecimen(specimenCount int) (specimen Specimen, speciesSpecimens []Specimen, specimenIndex int) {
+func (p *generationPopulation) randomSpecimen(specimenCount int) (specimen Specimen, speciesSpecimens []Specimen, specimenIndex int) {
 
 	// Pick a random specimen from the whole population.
 	var populationSpecimenIndex int = rand.Intn(specimenCount)
@@ -131,7 +131,7 @@ func (p *Population) randomSpecimen(specimenCount int) (specimen Specimen, speci
 }
 
 // DumpSpecimens removes all the specimens from the population and returns them, fit for selection.
-func (p *Population) DumpSpecimens() []Specimen {
+func (p *generationPopulation) DumpSpecimens() []Specimen {
 	// Empty out the species of their specimens, but keep them there, they need to stick around for
 	// recategorization later.
 	var specimens []Specimen
@@ -145,7 +145,7 @@ func (p *Population) DumpSpecimens() []Specimen {
 }
 
 // DumpSpecimensAsNeuralNets removes all the specimens from the population and returns them, fit for scoring.
-func (p *Population) DumpSpecimensAsNeuralNets() []NeatNeuralNet {
+func (p *generationPopulation) DumpSpecimensAsNeuralNets() []NeatNeuralNet {
 	// Empty out the species of their specimens, but keep them there, they need to stick around for
 	// recategorization later.
 	var neuralNets []NeatNeuralNet
@@ -159,14 +159,14 @@ func (p *Population) DumpSpecimensAsNeuralNets() []NeatNeuralNet {
 }
 
 // WeightSpecies weights all the specimen scores by the size of their species.
-func (p *Population) WeightSpecies() {
+func (p *generationPopulation) WeightSpecies() {
 	for i := range p.species {
 		p.species[i].WeightSpecies()
 	}
 }
 
 // AddAllSpecimens restocks the population with specimens.
-func (p *Population) AddAllSpecimens(specimens []Specimen) {
+func (p *generationPopulation) AddAllSpecimens(specimens []Specimen) {
 	for _, specimen := range specimens {
 		p.AddSpecimen(specimen)
 	}
@@ -174,7 +174,7 @@ func (p *Population) AddAllSpecimens(specimens []Specimen) {
 }
 
 // PruneEmptySpecies removes any species that has no more specimens.
-func (p *Population) PruneEmptySpecies() {
+func (p *generationPopulation) PruneEmptySpecies() {
 	// Preserve order of species. Matters to keep specimens always categorizing into the same species every generation.
 	var speciesToKeep []Species
 	for _, species := range p.species {

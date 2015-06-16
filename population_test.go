@@ -14,8 +14,8 @@ var _ = Suite(&PopulationSuite{})
 // Add the tests.
 
 func (s *PopulationSuite) Test_Population_AddSpecimen_NoSpeciesYet(c *C) {
-	var population Population
-	var expectedPopulation Population
+	var population generationPopulation
+	var expectedPopulation generationPopulation
 
 	// We'll need a few genomes for this test.
 	var genomeA neatGenome = gnm([]gn{gn{1, 0.2}})
@@ -31,13 +31,13 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_NoSpeciesYet(c *C) {
 	}
 
 	// Population is a new population with no species.
-	population = NewPopulation(config)
-	expectedPopulation = Population{config: config}
+	population = newPopulation(config)
+	expectedPopulation = generationPopulation{config: config}
 	c.Assert(population, DeepEquals, expectedPopulation)
 
 	// Add a specimen, which will create the first species.
 	population.AddNeuralNet(NeatNeuralNet{Genome: genomeA}, 10.0, 100.0, []float64{1.0, 2.0})
-	expectedPopulation = Population{
+	expectedPopulation = generationPopulation{
 		config: config,
 		species: []Species{
 			Species{
@@ -75,8 +75,8 @@ func (s *PopulationSuite) Test_RandomMateMutatePick(c *C) {
 }
 
 func (s *PopulationSuite) Test_Population_AddSpecimen_MatchingSpecies(c *C) {
-	var population Population
-	var expectedPopulation Population
+	var population generationPopulation
+	var expectedPopulation generationPopulation
 
 	// We have two genomes that compute to a speciation distance of 1.0 (with the constants we're using)
 	var genomeA neatGenome = gnm([]gn{gn{1, 0.2}})
@@ -93,14 +93,14 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_MatchingSpecies(c *C) {
 	}
 
 	// Population is a new population with no species.
-	population = NewPopulation(config)
+	population = newPopulation(config)
 	population.species = append(population.species, Species{genome: genomeB})
 	population.species = append(population.species, Species{genome: genomeA}) // The matching genome is second.
 	population.species = append(population.species, Species{genome: genomeA}) // Another matching genome is third.
 
 	// Add a specimen, will with match the second species.
 	population.AddNeuralNet(NeatNeuralNet{Genome: genomeA}, 0.0, 0.0, nil)
-	expectedPopulation = Population{
+	expectedPopulation = generationPopulation{
 		config: config,
 		species: []Species{
 			Species{
@@ -123,8 +123,8 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_MatchingSpecies(c *C) {
 }
 
 func (s *PopulationSuite) Test_Population_AddSpecimen_NoMatchingSpecies(c *C) {
-	var population Population
-	var expectedPopulation Population
+	var population generationPopulation
+	var expectedPopulation generationPopulation
 
 	// We have two genomes that compute to a speciation distance of 1.0 (with the constants we're using)
 	var genomeA neatGenome = gnm([]gn{gn{1, 0.2}})
@@ -141,12 +141,12 @@ func (s *PopulationSuite) Test_Population_AddSpecimen_NoMatchingSpecies(c *C) {
 	}
 
 	// Population is a new population with no species.
-	population = NewPopulation(config)
+	population = newPopulation(config)
 	population.species = append(population.species, Species{genome: genomeB}) // Won't match this species.
 
 	// Add a specimen, will with match the second species.
 	population.AddNeuralNet(NeatNeuralNet{Genome: genomeA}, 0.0, 0.0, nil)
-	expectedPopulation = Population{
+	expectedPopulation = generationPopulation{
 		config: config,
 		species: []Species{
 			Species{

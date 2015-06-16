@@ -16,10 +16,10 @@ type NeatNeuralNet struct {
 	topology computeTopology
 }
 
-// NewNeatNeuralNet creates a new well-formed NEAT neural net for the given inputs/outputs. All outputs must be able to produce a value when
+// newNeatNeuralNet creates a new well-formed NEAT neural net for the given inputs/outputs. All outputs must be able to produce a value when
 // the neural net is run so one random connction to an inptu will be made for each output. The new next innovation number (used to
 // identify genes across the experiment)
-func NewNeatNeuralNet(inOut NeuralNetInOut) (neuralNet NeatNeuralNet) {
+func newNeatNeuralNet(inOut NeuralNetInOut) (neuralNet NeatNeuralNet) {
 
 	// Start a new neural net.
 	neuralNet = NeatNeuralNet{
@@ -162,9 +162,9 @@ func (c *NeatNeuralNet) addNode(connectionGeneIndex int, function string) {
 	c.Genome.Genes = append(c.Genome.Genes, neatGene{GeneId: newGeneId(), IsEnabled: true, Type: _GENE_TYPE_CONNECTION, From: nodeId, To: to, Weight: weight})
 }
 
-// MutateAddNode adds a new node to the neural net with a randomly picked activation function and spliting a randomly selected
+// mutateAddNode adds a new node to the neural net with a randomly picked activation function and spliting a randomly selected
 // existing connection, putting the node in the middle of it.
-func (c *NeatNeuralNet) MutateAddNode(availableFunctions []string) {
+func (c *NeatNeuralNet) mutateAddNode(availableFunctions []string) {
 
 	// If we can't pick an activation function, we can't create a new node.
 	if len(availableFunctions) == 0 {
@@ -191,10 +191,10 @@ func (c *NeatNeuralNet) MutateAddNode(availableFunctions []string) {
 	c.addNode(geneIndex, function)
 }
 
-// MutateAddConnection adds a new valid connection to the neural net randomly wiring two nodes together.
+// mutateAddConnection adds a new valid connection to the neural net randomly wiring two nodes together.
 // It's possible that it randomly attempts to make a connection that is invalid (creating a circular depenency).
 // It will try up to max attempts to keep making connections, and indicate if one was made.
-func (c *NeatNeuralNet) MutateAddConnection(maxAttempts int) (wasAdded bool) {
+func (c *NeatNeuralNet) mutateAddConnection(maxAttempts int) (wasAdded bool) {
 
 	// If we don't know how long we can go, report an issue.
 	if maxAttempts < 1 {
@@ -245,8 +245,8 @@ func (c *NeatNeuralNet) MutateAddConnection(maxAttempts int) (wasAdded bool) {
 	return false
 }
 
-// MutateChangeConnectionWeight changes the weight of a randomly selected enabled connection to a random value between 0.0 and 1.0.
-func (c *NeatNeuralNet) MutateChangeConnectionWeight() {
+// mutateChangeConnectionWeight changes the weight of a randomly selected enabled connection to a random value between 0.0 and 1.0.
+func (c *NeatNeuralNet) mutateChangeConnectionWeight() {
 
 	// Randomly pick an enabled connection.
 	// First count and remember enabled connections.
@@ -315,8 +315,8 @@ func mate(fitterParent NeatNeuralNet, otherParent NeatNeuralNet) (child NeatNeur
 	return child
 }
 
-// Clone creates a clone of the neural net, identical but no shared data.
-func (c *NeatNeuralNet) Clone() (clone NeatNeuralNet) {
+// makeClone creates a clone of the neural net, identical but no shared data.
+func (c *NeatNeuralNet) makeClone() (clone NeatNeuralNet) {
 	clone = NeatNeuralNet{
 		InOut:  c.InOut,          // in/out is fixed for an experiment so not a problem if it gets cross referenced in anyway.
 		Genome: c.Genome.Clone(), // No shared gene data. Copied instead.
@@ -324,10 +324,10 @@ func (c *NeatNeuralNet) Clone() (clone NeatNeuralNet) {
 	return clone
 }
 
-// RandomizedClone creates a clone of the neural net and randomizes the clone's connection weights without altering the
+// randomizedClone creates a clone of the neural net and randomizes the clone's connection weights without altering the
 // the structure. Once an initial neural net structure is created for an experiment, create new members of the population by
 // by cloning the template neural net. The new weights will be between 0.0 and 1.0.
-func (c *NeatNeuralNet) RandomizedClone() (clone NeatNeuralNet) {
+func (c *NeatNeuralNet) randomizedClone() (clone NeatNeuralNet) {
 	clone = NeatNeuralNet{
 		InOut:  c.InOut, // in/out is fixed for an experiment so not a problem if it gets cross referenced in anyway.
 		Genome: neatGenome{},
@@ -343,8 +343,8 @@ func (c *NeatNeuralNet) RandomizedClone() (clone NeatNeuralNet) {
 	return clone
 }
 
-// PrepareComputeTopology prepares a neural net to be computed, building internal datastructures for the task.
-func (c *NeatNeuralNet) PrepareComputeTopology() {
+// prepareComputeTopology prepares a neural net to be computed, building internal datastructures for the task.
+func (c *NeatNeuralNet) prepareComputeTopology() {
 	var ok bool
 	if c.topology, ok = makeComputeTopology(c.InOut, c.Genome.Genes); !ok {
 		// Somehow we ended up with a circular dependency in our genome.
@@ -359,7 +359,7 @@ func (c *NeatNeuralNet) Compute(inputs map[string]float64) (outputs map[string]f
 
 	// Have we created a topology yet?
 	if c.topology.orderedNodes == nil {
-		c.PrepareComputeTopology()
+		c.prepareComputeTopology()
 	}
 
 	// Keep track of the current node values.
