@@ -128,10 +128,11 @@ func RunExperiment(experimentName string, config Config, sorter Sorter, selector
 
 		// Sort the specimens. The specimens earlier in the slice are considered more fit.
 		var bestScore float64
-		bestScore, best = experiment.sorter.Sort(specimens)
+		var sorted []Specimen
+		bestScore, best, sorted = experiment.sorter.Sort(specimens)
 
 		// Select the fittest specimens.
-		var fittestSpecimens []Specimen = experiment.selector.Select(specimens)
+		var fittestSpecimens []Specimen = experiment.selector.Select(sorted)
 
 		// Add the the specimens back into the population.
 		population.AddAllSpecimens(fittestSpecimens)
@@ -358,7 +359,7 @@ func (e *geneticExperiment) recordGeneration(generationNum uint64, bestExperimen
 		var specimenCount int = len(species.Specimens)
 		var specimenBest string
 		var specimenBestScore float64
-		specimenBestScore, specimenBest = e.sorter.Sort(species.Specimens)
+		specimenBestScore, specimenBest, _ = e.sorter.Sort(species.Specimens)
 
 		// Write the core experiment record to the database.
 		var result sql.Result

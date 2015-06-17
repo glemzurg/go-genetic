@@ -1,0 +1,28 @@
+{
+  "NeuralNetInOut": {"Inputs": ["CardId", "Suit", "Face", "Value"], "Outputs": ["Priority"]},
+  "Population": {
+    "PopulationSize": 100,
+    "Speciation": {
+      "Threshold": 0.25,
+      "C1": 1.0,
+      "C2": 1.0,
+      "C3": 1.0
+    },
+    "Mutate": {
+      "AvailableNodeFunctions": ["sigmoid", "bipolar_sigmoid", "inverse", "sine", "cosine", "tangent", "hyperbolic_tangent", "gaussian", "ramp", "step", "spike"],
+      "MaxAddConnectionAttempts": 100,
+      "MateWeight": 1,
+      "AddNodeWeight": 1,
+      "AddConnectionWeight": 1,
+      "AlterConnectionWeight": 1
+    }
+  },
+  "EndCondition": {
+    "GenerationNum": 0,
+    "TargetScore": 250,
+    "StagnantGenerationCount": 0
+  },
+  "Database": {
+    "RecordEveryNthGeneration": 20
+  }
+}

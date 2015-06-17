@@ -28,42 +28,8 @@ func NewSorterSimpleMinimize() Sorter {
 	}
 }
 
-// bySimpleSortAscending implements sort.Interface to sort ascending by (score + bonus) x (# members in species).
-// Example: sort.Sort(bySimpleSortAscending(specimens))
-type bySimpleSortAscending []Specimen
-
-func (a bySimpleSortAscending) Len() int      { return len(a) }
-func (a bySimpleSortAscending) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-func (a bySimpleSortAscending) Less(i, j int) bool {
-	if a[i].SelectionScore == a[j].SelectionScore {
-		if a[i].Score == a[j].Score {
-			return a[i].Bonus < a[j].Bonus // Third by bonus.
-		} else {
-			return a[i].Score < a[j].Score // Second by score.
-		}
-	}
-	return a[i].SelectionScore < a[j].SelectionScore // First by selection score.
-}
-
-// bySimpleSortDescending implements sort.Interface to sort descending by (score + bonus) / (# members in species).
-// Example: sort.Sort(bySimpleSortDescending(specimens))
-type bySimpleSortDescending []Specimen
-
-func (a bySimpleSortDescending) Len() int      { return len(a) }
-func (a bySimpleSortDescending) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-func (a bySimpleSortDescending) Less(i, j int) bool {
-	if a[i].SelectionScore == a[j].SelectionScore {
-		if a[i].Score == a[j].Score {
-			return a[i].Bonus > a[j].Bonus // Third by bonus.
-		} else {
-			return a[i].Score > a[j].Score // Second by score.
-		}
-	}
-	return a[i].SelectionScore > a[j].SelectionScore // First by selection score.
-}
-
 // Sort the specimens either ascending or descending.
-func (s *sorterSimple) Sort(specimens []Specimen) (bestScore float64, best string) {
+func (s *sorterSimple) Sort(specimens []Specimen) (bestScore float64, best string, sorted []Specimen) {
 
 	// Give each specimen a selection score.
 	var bestSpecimen *Specimen
@@ -109,9 +75,43 @@ func (s *sorterSimple) Sort(specimens []Specimen) (bestScore float64, best strin
 		sort.Sort(bySimpleSortAscending(specimens))
 	}
 
-	// The best value is the value at the specimen at the head of the list. It is the fittest.
-	return bestScore, best
+	// The best information of the population (may not be the specimen at the head of the list).
+	return bestScore, best, specimens
 }
 
 // IsMaximize returns true if we higher scores are fitter and false if lower scores are fitter.
 func (s *sorterSimple) IsMaximize() bool { return s.Maximize }
+
+// bySimpleSortAscending implements sort.Interface to sort ascending by (score + bonus) x (# members in species).
+// Example: sort.Sort(bySimpleSortAscending(specimens))
+type bySimpleSortAscending []Specimen
+
+func (a bySimpleSortAscending) Len() int      { return len(a) }
+func (a bySimpleSortAscending) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a bySimpleSortAscending) Less(i, j int) bool {
+	if a[i].SelectionScore == a[j].SelectionScore {
+		if a[i].Score == a[j].Score {
+			return a[i].Bonus < a[j].Bonus // Third by bonus.
+		} else {
+			return a[i].Score < a[j].Score // Second by score.
+		}
+	}
+	return a[i].SelectionScore < a[j].SelectionScore // First by selection score.
+}
+
+// bySimpleSortDescending implements sort.Interface to sort descending by (score + bonus) / (# members in species).
+// Example: sort.Sort(bySimpleSortDescending(specimens))
+type bySimpleSortDescending []Specimen
+
+func (a bySimpleSortDescending) Len() int      { return len(a) }
+func (a bySimpleSortDescending) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a bySimpleSortDescending) Less(i, j int) bool {
+	if a[i].SelectionScore == a[j].SelectionScore {
+		if a[i].Score == a[j].Score {
+			return a[i].Bonus > a[j].Bonus // Third by bonus.
+		} else {
+			return a[i].Score > a[j].Score // Second by score.
+		}
+	}
+	return a[i].SelectionScore > a[j].SelectionScore // First by selection score.
+}

@@ -30,7 +30,8 @@ func (s *SorterSimpleSuite) Test_Maximize(c *C) {
 	// Do the sort.
 	var bestScore float64
 	var best string
-	bestScore, best = sorter.Sort(specimens)
+	var sorted []Specimen
+	bestScore, best, sorted = sorter.Sort(specimens)
 
 	// Add the selection score each specimen should get.
 	specimenA.SelectionScore = 10.0
@@ -44,7 +45,7 @@ func (s *SorterSimpleSuite) Test_Maximize(c *C) {
 	var expectedSpecimens []Specimen = []Specimen{specimenA, specimenB, specimenC, specimenD, specimenE, specimenF}
 
 	// Did we get what we expected?
-	c.Check(specimens, DeepEquals, expectedSpecimens)
+	c.Check(sorted, DeepEquals, expectedSpecimens)
 	c.Check(bestScore, Equals, 10.0)
 	c.Check(best, Equals, "score: 10.000000, bonus: 5.000000, speciesmembercount: 2")
 }
@@ -68,7 +69,8 @@ func (s *SorterSimpleSuite) Test_Minimize(c *C) {
 	// Do the sort.
 	var bestScore float64
 	var best string
-	bestScore, best = sorter.Sort(specimens)
+	var sorted []Specimen
+	bestScore, best, sorted = sorter.Sort(specimens)
 
 	// Add the selection score each specimen should get.
 	specimenA.SelectionScore = 3.0
@@ -82,7 +84,7 @@ func (s *SorterSimpleSuite) Test_Minimize(c *C) {
 	var expectedSpecimens []Specimen = []Specimen{specimenA, specimenB, specimenC, specimenD, specimenE, specimenF}
 
 	// Did we get what we expected?
-	c.Check(specimens, DeepEquals, expectedSpecimens)
+	c.Check(sorted, DeepEquals, expectedSpecimens)
 	c.Check(bestScore, Equals, 3.0)
 	c.Check(best, Equals, "score: 3.000000, bonus: -1.000000, speciesmembercount: 2")
 }
