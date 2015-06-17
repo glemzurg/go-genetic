@@ -55,6 +55,8 @@ func main() {
 		log.Panic(err)
 	}
 
+	log.Panic("This experiment is not currently working. The library doesn't know how to reach an experiment end condition when hypervolume indicators are in use. Sorry.")
+
 	// Run the experiment.
 	genetic.RunExperiment(experimentName, geneticConfig, &sorter, &selector, &scorer)
 	log.Println("Experiment Complete.")
