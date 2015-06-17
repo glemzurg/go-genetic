@@ -8,11 +8,14 @@ import (
 	"sort"
 )
 
-// SorterHypervolumeIndicator sorts multi-outcome specimens first by how must they improve on the rest of the population and
-// secondly on how good their multi-outcomes are individually. Hypervolume indicators require essentially comparing each member
+// SorterHypervolumeIndicator sorts multi-outcome specimens how good their outcomes are as well as how much their outcome is
+// unique in the population. Hypervolume indicators require essentially comparing each member
 // of the population against all other members of the population (although there is some small optimication).
 //
-// The hypervolume indicator sort ignores the score and bonus and only operatons on the outcomes from the scorer.
+// The hypervolume indicator does not work well with SelectorElitism. A hypercube that contains all the others becomes a local-maxima
+// with the indicator being given as a bonus on top of its normal volume.
+//
+// The hypervolume indicator sort ignores the score and bonus and only operatons on the multi-outcomes from the scorer.
 type SorterHypervolumeIndicator struct {
 	ReferencePoint []float64 // For each outcome, what is the base value the outcome is compared to.
 	Maximize       []bool    // For each outcome, true means a higher value is more fit, false means a lower value is more fit.
@@ -53,7 +56,7 @@ func (s *SorterHypervolumeIndicator) validOrPanic() {
 	}
 }
 
-// Sort the specimens descending, first by how much they uniquely improve on the population, next on how good the specimen's multi-outcomes are.
+// Sort the specimens descending by how good their multi-outcome are with a bonus for having multi-outcomes unique to the population.
 func (s *SorterHypervolumeIndicator) Sort(specimens []Specimen) (bestScore float64, best string, sorted []Specimen) {
 
 	// Create hypercubes of the specimens.
@@ -70,19 +73,21 @@ func (s *SorterHypervolumeIndicator) Sort(specimens []Specimen) (bestScore float
 	var bestSpecimen *specimenHypercube
 	for i := 0; i < len(hypercubes); i++ {
 
-		// Score based on hypervolume indicator (will always be positive).
-		var selectionScore float64 = hypercubes[i].indicator / float64(hypercubes[i].specimen.SpeciesMemberCount)
+		// Score based on hypervolume indicator and volume (will always be positive).
+		// Basically the score is the volume (how maximized each outcome is) and
+		// the bonus is the hypervolume indicator (basically the amount is volume that is not shared by other hypercubes is doubled).
+		var selectionScore float64 = (hypercubes[i].indicator + hypercubes[i].volume) / float64(hypercubes[i].specimen.SpeciesMemberCount)
 		hypercubes[i].specimen.setSelectionScore(selectionScore)
 
 		// Is this the best specimen we've found?
 		if bestSpecimen == nil {
 			bestSpecimen = hypercubes[i]
 		} else {
-			if hypercubes[i].indicator > bestScore {
+			if hypercubes[i].volume > bestScore {
 				bestSpecimen = hypercubes[i]
 			}
 		}
-		bestScore = bestSpecimen.indicator
+		bestScore = bestSpecimen.volume
 	}
 
 	// What is the text summary of the best specimen.
@@ -104,7 +109,7 @@ func (s *SorterHypervolumeIndicator) Sort(specimens []Specimen) (bestScore float
 // IsMaximize returns true. Hypervolume indicator sort makes normalized hypercubes that increase in volume when fitter.
 func (s *SorterHypervolumeIndicator) IsMaximize() bool { return true }
 
-// byHypervolumeIndicatorDescending implements sort.Interface to sort descending by selection score, then indicator, then volume.
+// byHypervolumeIndicatorDescending implements sort.Interface to sort descending by selection score, then volume, then indicator.
 // Example: sort.Sort(byHypervolumeIndicatorDescending(hypercubes))
 type byHypervolumeIndicatorDescending []*specimenHypercube
 
@@ -112,10 +117,10 @@ func (a byHypervolumeIndicatorDescending) Len() int      { return len(a) }
 func (a byHypervolumeIndicatorDescending) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a byHypervolumeIndicatorDescending) Less(i, j int) bool {
 	if a[i].specimen.SelectionScore == a[j].specimen.SelectionScore {
-		if a[i].indicator == a[j].indicator {
-			return a[i].volume > a[j].volume // Third by volume.
+		if a[i].volume == a[j].volume {
+			return a[i].indicator > a[j].indicator // Third by indicator.
 		} else {
-			return a[i].indicator > a[j].indicator // Second by indicator.
+			return a[i].volume > a[j].volume // Second by volume.
 		}
 	}
 	return a[i].specimen.SelectionScore > a[j].specimen.SelectionScore // First by selection score.

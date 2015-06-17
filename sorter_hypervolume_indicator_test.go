@@ -58,10 +58,10 @@ func (s *SorterHypervolumeIndicatorSuite) Test_ValidOrPanic(c *C) {
 func (s *SorterHypervolumeIndicatorSuite) Test_SorterHypervolumeIndicator(c *C) {
 
 	// Some specimens.
-	var specimenA Specimen = Specimen{Outcomes: []float64{2.0, 1.0}, SpeciesMemberCount: 1} // selection score: 0.5, indicator: 0.5, volume: 2.0
-	var specimenB Specimen = Specimen{Outcomes: []float64{1.0, 2.0}, SpeciesMemberCount: 2} // selection score: 0.25, indicator: 0.5, volume: 2.0
-	var specimenC Specimen = Specimen{Outcomes: []float64{1.5, 1.5}, SpeciesMemberCount: 1} // selection score: 0.25, indicator: 0.25, volume: 2.25
-	var specimenD Specimen = Specimen{Outcomes: []float64{0.5, 1.3}, SpeciesMemberCount: 1} // selection score: 0.0, dominated: 0.0, volume: 1.4625
+	var specimenA Specimen = Specimen{Outcomes: []float64{1.5, 1.5}, SpeciesMemberCount: 1} // selection score: 2.5, indicator: 0.25, volume: 2.25
+	var specimenB Specimen = Specimen{Outcomes: []float64{2.0, 1.0}, SpeciesMemberCount: 1} // selection score: 2.5, indicator: 0.5, volume: 2.0
+	var specimenC Specimen = Specimen{Outcomes: []float64{1.0, 2.0}, SpeciesMemberCount: 2} // selection score: 1.25, indicator: 0.5, volume: 2.0
+	var specimenD Specimen = Specimen{Outcomes: []float64{0.5, 1.3}, SpeciesMemberCount: 1} // selection score: 0.65, dominated: 0.0, volume: 0.65
 
 	// Put in a list that we will sort. The exact wrong order.
 	var specimens []Specimen = []Specimen{specimenD, specimenC, specimenB, specimenA}
@@ -80,16 +80,16 @@ func (s *SorterHypervolumeIndicatorSuite) Test_SorterHypervolumeIndicator(c *C) 
 	bestScore, best, sorted = sorter.Sort(specimens)
 
 	// Add the selection score each specimen should get.
-	specimenA.SelectionScore = 0.5
-	specimenB.SelectionScore = 0.25
-	specimenC.SelectionScore = 0.25
-	specimenD.SelectionScore = 0.0
+	specimenA.SelectionScore = 2.5
+	specimenB.SelectionScore = 2.5
+	specimenC.SelectionScore = 1.25
+	specimenD.SelectionScore = 0.65
 
 	// What should they become?
 	var expectedSpecimens []Specimen = []Specimen{specimenA, specimenB, specimenC, specimenD}
 
 	// Did we get what we expected?
 	c.Check(sorted, DeepEquals, expectedSpecimens)
-	c.Check(bestScore, Equals, 0.5)
-	c.Check(best, Equals, "indicator: 0.500000, volume: 2.000000, speciesmembercount: 2, outcomes: [1 2]")
+	c.Check(bestScore, Equals, 2.25)                                                                           // Volume is the ultimate best score.
+	c.Check(best, Equals, "indicator: 0.250000, volume: 2.250000, speciesmembercount: 1, outcomes: [1.5 1.5]") // Volume is the ultimate best score.
 }

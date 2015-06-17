@@ -154,10 +154,14 @@ func (s *Scorer) Score(neuralNet genetic.NeatNeuralNet, population []genetic.Nea
 	// There is one outcome value for each possible card. The goal is to reach an outcome of 0.0 which means we've matched
 	// the face of the card. For each value up or down from the card, add 1.0 to the score, moving it farther away from the desired score.
 	// The hypercube dimensions have a reference value of 20.0 which is greater than they could possibly be (which is correct).
+
+	// The max hypercube volume will be (20.0 - 0.0)^4 = 160000.0 so that's the hypercube volume means a perfect match of cards.
+
 	outcomes = nil
 	for i, winningValue := range s.winningHandValues {
 		outcomes = append(outcomes, math.Abs(float64(winningValue)-float64(handCards[i].Value)))
 	}
+
 	// Return just the multiple outcomes and let the hypervolume code evaluate them.
 	return 0.0, 0.0, outcomes
 }

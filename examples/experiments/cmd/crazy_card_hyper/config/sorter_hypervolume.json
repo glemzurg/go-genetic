@@ -1,5 +1,5 @@
 {
-  "ReferencePoint": [20, 20, 20, 20, 20, 20],
-  "Maximize": [false, false, false, false, false, false],
-  "Weights": [1, 1, 1, 1, 1, 1]
+  "ReferencePoint": [20, 20, 20, 20],
+  "Maximize": [false, false, false, false],
+  "Weights": [1, 1, 1, 1]
 }
