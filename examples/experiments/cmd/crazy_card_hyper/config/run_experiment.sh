@@ -25,5 +25,5 @@ echo "INSTALL" ; go install github.com/glemzurg...
 # Run an experiment.
 echo "RUN" ; bin/crazy_card_hyper -scorer=src/github.com/glemzurg/go-genetic/examples/experiments/cmd/crazy_card_hyper/config/scorer.json \
                                   -genetic=src/github.com/glemzurg/go-genetic/examples/experiments/cmd/crazy_card_hyper/config/genetic.json \
-                                  -sorter=src/github.com/glemzurg/go-genetic/examples/experiments/cmd/crazy_card_hyper/config/sorter_hypervolume.json
+                                  -sorter=src/github.com/glemzurg/go-genetic/examples/experiments/cmd/crazy_card_hyper/config/sorter_hypervolume.json \
                                   -selector=src/github.com/glemzurg/go-genetic/examples/experiments/cmd/crazy_card_hyper/config/truncate_selector.json

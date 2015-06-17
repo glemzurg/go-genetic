@@ -34,7 +34,7 @@ func LoadSorterHypervolumeIndicatorConfig(filename string) (SorterHypervolumeInd
 	if err = json.Unmarshal(bytes, &sorter); err != nil {
 		return SorterHypervolumeIndicator{}, err
 	}
-
+	sorter.validOrPanic()
 	return sorter, error(nil)
 }
 
