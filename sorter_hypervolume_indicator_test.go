@@ -60,8 +60,8 @@ func (s *SorterHypervolumeIndicatorSuite) Test_SorterHypervolumeIndicator(c *C) 
 	// Some specimens.
 	var specimenA Specimen = Specimen{Outcomes: []float64{1.5, 1.5}, SpeciesMemberCount: 1} // selection score: 2.5, indicator: 0.25, volume: 2.25
 	var specimenB Specimen = Specimen{Outcomes: []float64{2.0, 1.0}, SpeciesMemberCount: 1} // selection score: 2.5, indicator: 0.5, volume: 2.0
-	var specimenC Specimen = Specimen{Outcomes: []float64{1.0, 2.0}, SpeciesMemberCount: 2} // selection score: 1.25, indicator: 0.5, volume: 2.0
-	var specimenD Specimen = Specimen{Outcomes: []float64{0.5, 1.3}, SpeciesMemberCount: 1} // selection score: 0.65, dominated: 0.0, volume: 0.65
+	var specimenC Specimen = Specimen{Outcomes: []float64{0.5, 1.3}, SpeciesMemberCount: 1} // selection score: 0.65, dominated: 0.0, volume: 0.65
+	var specimenD Specimen = Specimen{Outcomes: []float64{1.0, 2.0}, SpeciesMemberCount: 2} // selection score: 0.625, indicator: 0.5, volume: 2.0
 
 	// Put in a list that we will sort. The exact wrong order.
 	var specimens []Specimen = []Specimen{specimenD, specimenC, specimenB, specimenA}
@@ -71,6 +71,7 @@ func (s *SorterHypervolumeIndicatorSuite) Test_SorterHypervolumeIndicator(c *C) 
 		ReferencePoint: []float64{0.0, 0.0},
 		Maximize:       []bool{true, true},
 		Weights:        []float64{1.0, 1.0},
+		IndicatorPower: 2.0,
 	}
 
 	// Do the sort.
@@ -82,8 +83,8 @@ func (s *SorterHypervolumeIndicatorSuite) Test_SorterHypervolumeIndicator(c *C) 
 	// Add the selection score each specimen should get.
 	specimenA.SelectionScore = 2.5
 	specimenB.SelectionScore = 2.5
-	specimenC.SelectionScore = 1.25
-	specimenD.SelectionScore = 0.65
+	specimenC.SelectionScore = 0.65
+	specimenD.SelectionScore = 0.625
 
 	// What should they become?
 	var expectedSpecimens []Specimen = []Specimen{specimenA, specimenB, specimenC, specimenD}

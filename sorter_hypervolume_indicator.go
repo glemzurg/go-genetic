@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"sort"
 )
 
@@ -20,6 +21,7 @@ type SorterHypervolumeIndicator struct {
 	ReferencePoint []float64 // For each outcome, what is the base value the outcome is compared to.
 	Maximize       []bool    // For each outcome, true means a higher value is more fit, false means a lower value is more fit.
 	Weights        []float64 // For each outcome, what relative value does it have? A higher value means it will have more influence on the sort.
+	IndicatorPower float64   // The power scaling for the indicator, assuming that an indicator may only be in half the dimensions 2.0 would scale to be relative to the hypercube's volume
 }
 
 // LoadSorterHypervolumeIndicatorConfig loads the json filename as a new configuration.
@@ -69,14 +71,34 @@ func (s *SorterHypervolumeIndicator) Sort(specimens []Specimen) (bestScore float
 	// Calculate the hypervolume indicators.
 	calculateHypervolumeIndicators(hypercubes)
 
+	// How many dimensions are in the hypercubes.
+	var dimensions float64 = float64(len(s.ReferencePoint))
+
 	// Give each specimen a selection score.
 	var bestSpecimen *specimenHypercube
 	for i := 0; i < len(hypercubes); i++ {
 
+		// Imagine a 10-dimensional hypercube. That's a lot of hypercubic volume.
+		// This volume is the main score for the multi-outcomes, the better each outcome the more cubic volume.
+		// The values that influence the sort must be on compariable scales.
+
+		// First hypervolume indicators. A hypercube may only be extraordinary (have volume not overlapping other cubes) in
+		// a few dimenions. Because of that, the cubic volume for those dimensions will be quite a bit smaller. Scale
+		// the hypervolume indicator exponentially to let it pretend like it has more dimenions.
+		var scaledIndicator float64 = hypercubes[i].indicator
+		// Only power if we're greater than one, or else we're shrinking the indicator (not our intent).
+		if scaledIndicator > 1.0 {
+			scaledIndicator = math.Pow(scaledIndicator, s.IndicatorPower)
+		}
+
+		// The same with weighting the volume by members of species. We basically have to power the members of the species
+		// by the dimensions of the hypercube to get a weight that is on scale with the cubic volume.
+		var scaledSpeciesCount float64 = math.Pow(float64(hypercubes[i].specimen.SpeciesMemberCount), dimensions)
+
 		// Score based on hypervolume indicator and volume (will always be positive).
 		// Basically the score is the volume (how maximized each outcome is) and
 		// the bonus is the hypervolume indicator (basically the amount is volume that is not shared by other hypercubes is doubled).
-		var selectionScore float64 = (hypercubes[i].indicator + hypercubes[i].volume) / float64(hypercubes[i].specimen.SpeciesMemberCount)
+		var selectionScore float64 = (scaledIndicator + hypercubes[i].volume) / scaledSpeciesCount
 		hypercubes[i].specimen.setSelectionScore(selectionScore)
 
 		// Is this the best specimen we've found?

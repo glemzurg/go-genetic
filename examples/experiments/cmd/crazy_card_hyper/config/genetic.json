@@ -3,7 +3,7 @@
   "Population": {
     "PopulationSize": 100,
     "Speciation": {
-      "Threshold": 0.25,
+      "Threshold": 0.18,
       "C1": 1.0,
       "C2": 1.0,
       "C3": 1.0
