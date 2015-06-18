@@ -41,13 +41,16 @@ func newHypecubeKdTree(hypercubes []*specimenHypercube) hypercubeKdTree {
 func (t *hypercubeKdTree) calculateHypervolumeIndicatorBase(hypercube *specimenHypercube) (isDominated bool, newIndicatorBase []float64) {
 
 	// The initial base for a hypervolume indicator is (0.0, 0.0, ...)
+	// Initially left branches are viable for all dimensions.
 	var indicatorBase []float64 = make([]float64, len(hypercube.dimensions))
+	var leftViable []bool = make([]bool, len(hypercube.dimensions))
 	for i := range hypercube.dimensions {
 		indicatorBase[i] = 0.0
+		leftViable[i] = true
 	}
 
 	// Now just return what we find when we dive into the tree.
-	return t.root.calculateHypervolumeIndicatorBase(hypercube, indicatorBase)
+	return t.root.calculateHypervolumeIndicatorBase(hypercube, indicatorBase, leftViable)
 }
 
 // hypercubeKdTreeNode is a single node in the search tree. Some portion of the hypercube population is
@@ -130,7 +133,10 @@ func newHypercubeKdTreeNode(hypercubes []*specimenHypercube, dimensions int, dep
 // the final hypervolume indicator will be the volume of the hypercube created by the source hypercube's defining point in one corner and the indicator's
 // base in the opposite corner. As we discover hypercubes that overlap our current indicator, we move the indicator base "higher", closer to the defining
 // point, and so shrink the eventual hypervolume indicator.
-func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *specimenHypercube, indicatorBase []float64) (isDominated bool, newIndicatorBase []float64) {
+func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *specimenHypercube, indicatorBase []float64, leftViable []bool) (isDominated bool, newIndicatorBase []float64) {
+
+	// For the moment, the left branch is as viable as in the node above us.
+	var newLeftViable []bool = leftViable
 
 	// Only examine this node's hypercube if it's not the one we're currently checking. This is a process of checking other hypercubes
 	// but the one we're checking is somewhere in the k-d tree.
@@ -172,6 +178,9 @@ func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *speci
 			// "consumes" part of its volume.
 			indicatorBase = moveIndicatorBase(hypercube.dimensions, indicatorBase, n.hypercube.dimensions)
 		}
+
+		// We may have discovered that in this dimension, to the left, we have nothing more to learn.
+		newLeftViable = updateLeftViable(n.dimension, leftViable, indicatorBase, n.hypercube.dimensions)
 	}
 
 	// We have compared our seaching cube against the cube in this node (or we are the cube of this node) and were not dominated.
@@ -180,18 +189,19 @@ func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *speci
 	var isLeftDominated, isRightDominated bool
 	var leftIndicatorBase, rightIndicatorBase []float64
 
-	// Go down left branch if there is one.
-	if n.left == nil {
+	// Go down left branch if there is one, and there is still more to learn down that branch.
+	var leftNotViable bool = !isLeftViable(newLeftViable)
+	if n.left == nil || leftNotViable {
 		isLeftDominated, leftIndicatorBase = false, indicatorBase
 	} else {
-		isLeftDominated, leftIndicatorBase = n.left.calculateHypervolumeIndicatorBase(hypercube, indicatorBase)
+		isLeftDominated, leftIndicatorBase = n.left.calculateHypervolumeIndicatorBase(hypercube, indicatorBase, newLeftViable) // The left branch may have just accrued a dimension no longer viable.
 	}
 
 	// Go down right branch if there is one.
 	if n.right == nil {
 		isRightDominated, rightIndicatorBase = false, indicatorBase
 	} else {
-		isRightDominated, rightIndicatorBase = n.right.calculateHypervolumeIndicatorBase(hypercube, indicatorBase)
+		isRightDominated, rightIndicatorBase = n.right.calculateHypervolumeIndicatorBase(hypercube, indicatorBase, leftViable) // Keep original left viable.
 	}
 
 	// Dominated?
@@ -225,6 +235,33 @@ func moveIndicatorBase(limit []float64, base []float64, other []float64) (movedB
 		}
 	}
 	return movedBase
+}
+
+// updateLeftViable udpates our bookkeeping to explore the left-hand branch (where numbers get lower). The right-hand
+// branch is already accounted for by checking if the searching cube is dominated.
+func updateLeftViable(dimension int, leftViable []bool, base []float64, other []float64) []bool {
+	// The numbers in the base always move higher. If the number in the current dimenions is less than or equal to the
+	// base, that dimension is no longer of interest for the hypervolume indicator (at least in left branch searches
+	// where numbers always go lower).
+	var newLeftViable []bool = make([]bool, len(leftViable))
+	copy(newLeftViable, leftViable)
+	if base[dimension] >= other[dimension] {
+		// The base is already equal to or higher in this dimension.
+		// We cannot improve the base by checking left-hand branches.
+		newLeftViable[dimension] = false
+	}
+	return newLeftViable
+}
+
+// isLeftViable checks out bookkeeping data, if any dimension is still viable in a left hand branch keep digging.
+// The moment no dimensino is of interested in the left hand branches, stop going down them.
+func isLeftViable(leftViable []bool) bool {
+	for _, viable := range leftViable {
+		if viable {
+			return true
+		}
+	}
+	return false
 }
 
 // byDimensionHypercubeSort implements sort.Interface to sort hypercubes ascending by a particular dimension.
