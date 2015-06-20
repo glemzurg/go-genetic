@@ -14,7 +14,7 @@
       "MateWeight": 1,
       "AddNodeWeight": 1,
       "AddConnectionWeight": 1,
-      "AlterConnectionWeight": 1
+      "AlterConnectionWeight": 20
     }
   },
   "EndCondition": {

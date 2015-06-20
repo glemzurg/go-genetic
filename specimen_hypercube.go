@@ -19,6 +19,9 @@ type specimenHypercube struct {
 	isDominated   bool      // True if this cube lies completly within another cube.
 	indicator     float64   // The volume of the part of this hypercube that is not overlapped by any other hypercube in the population.
 	indicatorBase []float64 // The corner of the indicator hypercube opposite the corner defined by this hypercube's dimensions.
+
+	// Bookkeeping for doing comparisons.
+	comparedWith map[*specimenHypercube]bool // True if we have compared against a cube already.
 }
 
 // newSpecimenHypercube creates a new normalized hypercube for the specimen.

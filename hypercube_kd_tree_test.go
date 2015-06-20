@@ -109,3 +109,141 @@ func (s *HypercubeKdTreeSuite) Test_IsLeftViable(c *C) {
 	c.Assert(isLeftViable([]bool{true, false, false}), Equals, true)
 	c.Assert(isLeftViable([]bool{false, false, false}), Equals, false)
 }
+
+func (s *HypercubeKdTreeSuite) Test_KdCompareHypercubes(c *C) {
+
+	// Determine whether it is meaningful for the cube to search down the left or right branches of the k-d tree.
+	var isLeftSearchable, isRightSearchable bool
+
+	// We need two hypercubes to compare.
+	var searchingHypercube *specimenHypercube
+	var nodeHypercube *specimenHypercube
+
+	// The nodes keep track of the dimensions of cubes going out of them.
+	var maximumLeft []float64 = []float64{0.0, 0.0}
+	var minimumRight []float64 = []float64{100.0, 100.0}
+
+	// Start with two hypercubes that overlap but no domination.
+	searchingHypercube = &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.0, 0.0}}
+	nodeHypercube = &specimenHypercube{dimensions: []float64{2.0, 1.0}, indicatorBase: []float64{0.0, 0.0}}
+	isLeftSearchable, isRightSearchable = kdCompareHypercubes(searchingHypercube, nodeHypercube, maximumLeft, minimumRight)
+	c.Check(isLeftSearchable, Equals, true)  // Still searchable.
+	c.Check(isRightSearchable, Equals, true) // Still searchable.
+	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{1.0, 1.0}})
+	c.Assert(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{2.0, 1.0}, indicatorBase: []float64{1.0, 1.0}, comparedWith: map[*specimenHypercube]bool{searchingHypercube: true}})
+
+	// Reverse the inputs.
+	searchingHypercube = &specimenHypercube{dimensions: []float64{2.0, 1.0}, indicatorBase: []float64{0.0, 0.0}}
+	nodeHypercube = &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.0, 0.0}}
+	isLeftSearchable, isRightSearchable = kdCompareHypercubes(searchingHypercube, nodeHypercube, maximumLeft, minimumRight)
+	c.Check(isLeftSearchable, Equals, true)  // Still searchable.
+	c.Check(isRightSearchable, Equals, true) // Still searchable.
+	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{2.0, 1.0}, indicatorBase: []float64{1.0, 1.0}})
+	c.Assert(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{1.0, 1.0}, comparedWith: map[*specimenHypercube]bool{searchingHypercube: true}})
+
+	// Left branch not searchable, indicator base too high.
+	searchingHypercube = &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{2.0, 1.0}}
+	nodeHypercube = &specimenHypercube{dimensions: []float64{3.0, 2.0}, indicatorBase: []float64{0.0, 0.0}}
+	isLeftSearchable, isRightSearchable = kdCompareHypercubes(searchingHypercube, nodeHypercube, []float64{2.0, 1.0}, minimumRight)
+	c.Check(isLeftSearchable, Equals, false) // Nothing to the left that will move our indicator base higher.
+	c.Check(isRightSearchable, Equals, true) // Still searchable.
+	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{2.0, 1.0}})
+	c.Assert(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{3.0, 2.0}, indicatorBase: []float64{1.0, 1.0}, comparedWith: map[*specimenHypercube]bool{searchingHypercube: true}})
+
+	// One cube dominates the other.
+	searchingHypercube = &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.0, 0.0}}
+	nodeHypercube = &specimenHypercube{dimensions: []float64{0.5, 1.0}, indicatorBase: []float64{0.0, 0.0}}
+	isLeftSearchable, isRightSearchable = kdCompareHypercubes(searchingHypercube, nodeHypercube, maximumLeft, minimumRight)
+	c.Check(isLeftSearchable, Equals, false) // Only smaller values would be to the left, the indicator base won't get larger.
+	c.Check(isRightSearchable, Equals, true) // Still searchable.
+	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.5, 1.0}})
+	c.Assert(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{0.5, 1.0}, isDominated: true, indicatorBase: nil, comparedWith: map[*specimenHypercube]bool{searchingHypercube: true}})
+
+	// Reverse the inputs.
+	searchingHypercube = &specimenHypercube{dimensions: []float64{0.5, 1.0}, indicatorBase: []float64{0.0, 0.0}}
+	nodeHypercube = &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.0, 0.0}}
+	isLeftSearchable, isRightSearchable = kdCompareHypercubes(searchingHypercube, nodeHypercube, maximumLeft, minimumRight)
+	c.Check(isLeftSearchable, Equals, false)  // Searching cube dominated, nothing more to search.
+	c.Check(isRightSearchable, Equals, false) // Searching cube dominated, nothing more to search.
+	// The searching cube has new indicator base.
+	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{0.5, 1.0}, isDominated: true, indicatorBase: nil})
+	// The node cube has new indicator base, but also remembers the comparision.
+	c.Assert(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.5, 1.0}, comparedWith: map[*specimenHypercube]bool{searchingHypercube: true}})
+
+	// One cube already dominated.
+	searchingHypercube = &specimenHypercube{dimensions: []float64{1.0, 2.0}, isDominated: true, indicatorBase: nil}
+	nodeHypercube = &specimenHypercube{dimensions: []float64{2.0, 1.0}, indicatorBase: []float64{0.0, 0.0}}
+	isLeftSearchable, isRightSearchable = kdCompareHypercubes(searchingHypercube, nodeHypercube, maximumLeft, minimumRight)
+	c.Check(isLeftSearchable, Equals, false)  // Searching cube dominated, nothing more can be done for hypervolume indicator.
+	c.Check(isRightSearchable, Equals, false) // Searching cube dominated, nothing more can be done for hypervolume indicator.
+	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, isDominated: true, indicatorBase: nil})
+	c.Assert(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{2.0, 1.0}, indicatorBase: []float64{1.0, 1.0}})
+
+	// Reverse the inputs.
+	searchingHypercube = &specimenHypercube{dimensions: []float64{2.0, 1.0}, indicatorBase: []float64{0.0, 0.0}}
+	nodeHypercube = &specimenHypercube{dimensions: []float64{1.0, 2.0}, isDominated: true, indicatorBase: nil}
+	isLeftSearchable, isRightSearchable = kdCompareHypercubes(searchingHypercube, nodeHypercube, maximumLeft, minimumRight)
+	c.Check(isLeftSearchable, Equals, false) // The node cube is dominated, all cubes to the left are dominated too, only cubes to the right have more to share.
+	c.Check(isRightSearchable, Equals, true) // Still searchable.
+	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{2.0, 1.0}, indicatorBase: []float64{1.0, 1.0}})
+	c.Assert(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, isDominated: true, indicatorBase: nil})
+
+	// The cubes are absolutely equal.
+	searchingHypercube = &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.0, 0.0}}
+	nodeHypercube = &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.0, 0.0}}
+	isLeftSearchable, isRightSearchable = kdCompareHypercubes(searchingHypercube, nodeHypercube, maximumLeft, minimumRight)
+	c.Check(isLeftSearchable, Equals, true)  // Still searchable, smaller valueas to the left but we need at least one to give us an indicator.
+	c.Check(isRightSearchable, Equals, true) // Still searchable.
+	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.0, 0.0}})
+	c.Assert(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, isDominated: true, indicatorBase: nil, comparedWith: map[*specimenHypercube]bool{searchingHypercube: true}})
+
+	// The cubes are the same cube.
+	searchingHypercube = &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.0, 0.0}}
+	nodeHypercube = searchingHypercube
+	isLeftSearchable, isRightSearchable = kdCompareHypercubes(searchingHypercube, nodeHypercube, maximumLeft, minimumRight)
+	c.Check(isLeftSearchable, Equals, true)  // Still searchable, only comparing against cubes that are not us can tell us there is no more to find.
+	c.Check(isRightSearchable, Equals, true) // Still searchable.
+	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.0, 0.0}})
+	c.Assert(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.0, 0.0}})
+
+	// Compare against a prior compare.
+	nodeHypercube = &specimenHypercube{dimensions: []float64{2.0, 1.0}, indicatorBase: []float64{0.0, 0.0}}
+	searchingHypercube = &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.0, 0.0}, comparedWith: map[*specimenHypercube]bool{nodeHypercube: true}}
+	isLeftSearchable, isRightSearchable = kdCompareHypercubes(searchingHypercube, nodeHypercube, maximumLeft, minimumRight)
+	c.Check(isLeftSearchable, Equals, true)  // Still searchable.
+	c.Check(isRightSearchable, Equals, true) // Still searchable.
+	// No changes made to either hypercube.
+	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.0, 0.0}, comparedWith: map[*specimenHypercube]bool{nodeHypercube: true}})
+	c.Assert(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{2.0, 1.0}, indicatorBase: []float64{0.0, 0.0}})
+
+	// Compare against a prior compare, left branch not searchable.
+	nodeHypercube = &specimenHypercube{dimensions: []float64{2.0, 1.0}, indicatorBase: []float64{0.0, 0.0}}
+	searchingHypercube = &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{2.0, 1.0}, comparedWith: map[*specimenHypercube]bool{nodeHypercube: true}}
+	isLeftSearchable, isRightSearchable = kdCompareHypercubes(searchingHypercube, nodeHypercube, []float64{2.0, 1.0}, minimumRight)
+	c.Check(isLeftSearchable, Equals, false) // Nothing to the left that will move our indicator base higher.
+	c.Check(isRightSearchable, Equals, true) // Still searchable.
+	// No changes made to either hypercube.
+	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.0, 0.0}, comparedWith: map[*specimenHypercube]bool{nodeHypercube: true}})
+	c.Assert(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{2.0, 1.0}, indicatorBase: []float64{0.0, 0.0}})
+
+	// Compare against a prior compare, right branch not searchable.
+	nodeHypercube = &specimenHypercube{dimensions: []float64{2.0, 3.0}, indicatorBase: []float64{0.0, 0.0}}
+	searchingHypercube = &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.0, 0.0}, comparedWith: map[*specimenHypercube]bool{nodeHypercube: true}}
+	isLeftSearchable, isRightSearchable = kdCompareHypercubes(searchingHypercube, nodeHypercube, maximumLeft, []float64{1.0, 2.0})
+	c.Check(isLeftSearchable, Equals, true)  // Still searchable.
+	c.Check(isRightSearchable, Equals, true) // Only things to the right are dominating cubes, but there may be no cubes at all.
+	// No changes made to either hypercube.
+	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.0, 0.0}, comparedWith: map[*specimenHypercube]bool{nodeHypercube: true}})
+	c.Assert(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{2.0, 3.0}, indicatorBase: []float64{0.0, 0.0}})
+
+	// Compare against a prior compare, neither branch searchable.
+	nodeHypercube = &specimenHypercube{dimensions: []float64{2.0, 3.0}, indicatorBase: []float64{0.0, 0.0}}
+	searchingHypercube = &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{2.0, 3.0}, comparedWith: map[*specimenHypercube]bool{nodeHypercube: true}}
+	isLeftSearchable, isRightSearchable = kdCompareHypercubes(searchingHypercube, nodeHypercube, []float64{2.0, 1.0}, []float64{1.0, 2.0})
+	c.Check(isLeftSearchable, Equals, false) // Nothing to the left that will move our indicator base higher.
+	c.Check(isRightSearchable, Equals, true) // Only things to the right are dominating cubes, but there may be no cubes at all.
+	// No changes made to either hypercube.
+	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.0, 0.0}, comparedWith: map[*specimenHypercube]bool{nodeHypercube: true}})
+	c.Assert(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{2.0, 3.0}, indicatorBase: []float64{0.0, 0.0}})
+
+}
