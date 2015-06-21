@@ -269,6 +269,19 @@ func isLeftViable(leftViable []bool) bool {
 // down either or both of the branches.
 func kdCompareHypercubes(searchingHypercube *specimenHypercube, nodeHypercube *specimenHypercube, maximumLeft []float64) (isLeftSearchable bool) {
 
+	// If the cubes are the same cube, just bail.
+	if searchingHypercube == nodeHypercube {
+		// Assume we need to keep searching left.
+		return true
+	}
+
+	// If we have already compared these cubes, bail.
+	var alreadyCompared bool
+	if _, alreadyCompared = searchingHypercube.comparedWith[nodeHypercube]; alreadyCompared {
+		// Assume we need to keep searching left.
+		return true
+	}
+
 	// Assume the left branch of this node is not searchabe. Discover if it is.
 	isLeftSearchable = false
 
