@@ -32,10 +32,18 @@ func newSpecimenHypercube(specimen Specimen, referencePoint []float64, isMaximiz
 	var volume float64 = 1.0
 	dimensions, volume = specimenHypercubeDimensions(specimen.Outcomes, referencePoint, isMaximize, weights)
 
+	// All cubes start without knowing what the base for the hypervolume indicator is.
+	// Set it to (0.0, 0.0, ...)
+	var indicatorBase []float64
+	for i := 0; i < len(referencePoint); i++ {
+		indicatorBase = append(indicatorBase, 0.0)
+	}
+
 	return specimenHypercube{
-		dimensions: dimensions,
-		volume:     volume,
-		specimen:   specimen,
+		dimensions:    dimensions,
+		volume:        volume,
+		specimen:      specimen,
+		indicatorBase: indicatorBase,
 	}
 }
 
@@ -59,6 +67,20 @@ func (h *specimenHypercube) equals(other *specimenHypercube) bool {
 		}
 	}
 	return true
+}
+
+// setDominated updates this cube to the state that it's dominated. This cube lies wholely within another cube.
+func (h *specimenHypercube) setDominated() {
+	h.isDominated = true
+	h.indicator = 0.0
+	h.indicatorBase = nil
+}
+
+// calculateHypervolumeIndicator calculates the indicator if we are not dominated.
+func (h *specimenHypercube) calculateHypervolumeIndicator() {
+	if !h.isDominated {
+		h.indicator = calculateHypervolume(h.dimensions, h.indicatorBase)
+	}
 }
 
 // specimenHypercubeDimensions calculates the normalized hypercube.

@@ -2,7 +2,6 @@ package genetic
 
 import (
 	"log"
-	"math"
 	"sort"
 )
 
@@ -38,19 +37,10 @@ func newHypecubeKdTree(hypercubes []*specimenHypercube) hypercubeKdTree {
 
 // calculateHypervolumeIndicator searches through the whole tree and calculates the hypervolume indicator base point for the given hypercube.
 // If the we learn the hypercube is dominated (wholely inside another hypercube) the indicator base is nil.
-func (t *hypercubeKdTree) calculateHypervolumeIndicatorBase(hypercube *specimenHypercube) (isDominated bool, newIndicatorBase []float64) {
+func (t *hypercubeKdTree) calculateHypervolumeIndicatorBase(hypercube *specimenHypercube) {
 
-	// The initial base for a hypervolume indicator is (0.0, 0.0, ...)
-	// Initially left branches are viable for all dimensions.
-	var indicatorBase []float64 = make([]float64, len(hypercube.dimensions))
-	var leftViable []bool = make([]bool, len(hypercube.dimensions))
-	for i := range hypercube.dimensions {
-		indicatorBase[i] = 0.0
-		leftViable[i] = true
-	}
-
-	// Now just return what we find when we dive into the tree.
-	return t.root.calculateHypervolumeIndicatorBase(hypercube, indicatorBase, leftViable)
+	// Walk the tree with the hypercube, updating its hypervolume indicator base.
+	t.root.calculateHypervolumeIndicatorBase(hypercube)
 }
 
 // hypercubeKdTreeNode is a single node in the search tree. Some portion of the hypercube population is
@@ -59,6 +49,7 @@ type hypercubeKdTreeNode struct {
 	dimension   int                  // The dimension this node was split on.
 	hypercube   *specimenHypercube   // The hypercube at this node.
 	maximumLeft []float64            // The maximum hypercube that could exist in a left branch (the branch may be nil though). Nil if we're not deep enough in tree to know.
+	isDominated bool                 // Are all the cubes under this branch dominated by another cube?
 	left        *hypercubeKdTreeNode // The hypercubes branch of this node with a dimensional value less than this node's hypercube.
 	right       *hypercubeKdTreeNode // The hypercubes branch of this node with a dimensional value greater than this node's hypercube.
 }
@@ -191,140 +182,53 @@ func calculateNewMaximumLeft(maximumLeft []float64, dimensions int, splitDimensi
 // the final hypervolume indicator will be the volume of the hypercube created by the source hypercube's defining point in one corner and the indicator's
 // base in the opposite corner. As we discover hypercubes that overlap our current indicator, we move the indicator base "higher", closer to the defining
 // point, and so shrink the eventual hypervolume indicator.
-func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *specimenHypercube, indicatorBase []float64, leftViable []bool) (isDominated bool, newIndicatorBase []float64) {
+func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *specimenHypercube) {
 
-	// For the moment, the left branch is as viable as in the node above us.
-	var newLeftViable []bool = leftViable
+	// Update the searching hypercube and the node hypercube's hypervolume indicators by comparing them.
+	var isLeftSearchable, isLeftDominated bool = kdCompareHypercubes(hypercube, n.hypercube, n.maximumLeft)
 
-	// Only examine this node's hypercube if it's not the one we're currently checking. This is a process of checking other hypercubes
-	// but the one we're checking is somewhere in the k-d tree.
-	if hypercube != n.hypercube {
-		// This node's hypercube is not us.
+	// Are all the left branch cubes dominated? They may still move the hypervolume indicator so have to be searched.
+	// But since we know, update them accordingly.
+	if isLeftDominated && n.left != nil {
+		n.left.dominateWholeBranch()
+	}
 
-		// First, just check for simple domination regarding the hypercube of this node.
-		switch {
+	// Once we discover the searching hypercube is dominated, there is nothing more to learn about its
+	// hypervolume indicator... it doesn't have one. Only continue if we are not dominated.
+	if !hypercube.isDominated {
 
-		case hypercube.equals(n.hypercube):
-			// We run into a potential issue here where two hypercubes have the exact same dimensions.
-			// Only one of these hypercubes will have the hypervolume indicator. The other will be considered a non-contributor.
-			// When two hypercubes have exact same dimensions, we want the current searching hypercube to be the "winner".
-			// The other hypercube hasn't been searched yet. If it had then one of these cubes would already be dominated.
-			// As-in the current searching cube would have been dominated, in which case it would not be in the search right now.
-			n.hypercube.isDominated = true // This is a pointer manipulation altering the top-level hypercube list.
-
-		case hypercube.isDominatedBy(n.hypercube):
-			// We're not equal and this hypercube exists wholely inside another cube. We don't know whether some other cube
-			// has or will dominate the other cube, be we are definitely a non-contributor to the population's hypervolume.
-			hypercube.isDominated = true // This is a pointer manipulation altering the top-level hypercube list.
-
-		case n.hypercube.isDominatedBy(hypercube):
-			// We're not equal and this nodes hypercube wholely exists inside the searching hypercube. It is dominated.
-			n.hypercube.isDominated = true
+		// Let's look at larger hypercubes first. We may discover we're dominated.
+		if n.right != nil {
+			n.right.calculateHypervolumeIndicatorBase(hypercube)
 		}
 
-		// If we are dominated, short circuit out of the search. We have the answer we need for this hypercube.
-		if hypercube.isDominated {
-			return true, nil
+		// Still not dominated?
+		if !hypercube.isDominated {
+
+			// We may have discovered there is nothing more to learn going down the left branch.
+			// But if there is, continue.
+			if n.left != nil && isLeftSearchable {
+				n.left.calculateHypervolumeIndicatorBase(hypercube)
+			}
 		}
-
-		// We're not dominated. If this node's hypercube is also not dominated, it can tell us something about our hypervolume
-		// indicator. If this node's hypercube is dominated, what it has to tell us is irrelevant. The hypercube that dominated
-		//  it will be the one that shapes our hypervolume indicator (or it was the current searching cube).
-		if !n.hypercube.isDominated {
-
-			// Caculate what the new indicator base is when this nodes hypercube encrouches on our hypervolume indicator and
-			// "consumes" part of its volume.
-			indicatorBase = moveIndicatorBase(hypercube.dimensions, indicatorBase, n.hypercube.dimensions)
-		}
-
-		// We may have discovered that in this dimension, to the left, we have nothing more to learn.
-		newLeftViable = updateLeftViable(n.dimension, leftViable, indicatorBase, n.hypercube.dimensions)
 	}
-
-	// We have compared our seaching cube against the cube in this node (or we are the cube of this node) and were not dominated.
-	// The searching cube's hypervolume indicator base may have moved up a little. Dive into the child branches to find more
-	// cubes that shrink our hypervolume indicator.
-	var isLeftDominated, isRightDominated bool
-	var leftIndicatorBase, rightIndicatorBase []float64
-
-	// Go down left branch if there is one, and there is still more to learn down that branch.
-	var leftNotViable bool = !isLeftViable(newLeftViable)
-	if n.left == nil || leftNotViable {
-		isLeftDominated, leftIndicatorBase = false, indicatorBase
-	} else {
-		isLeftDominated, leftIndicatorBase = n.left.calculateHypervolumeIndicatorBase(hypercube, indicatorBase, newLeftViable) // The left branch may have just accrued a dimension no longer viable.
-	}
-
-	// Go down right branch if there is one.
-	if n.right == nil {
-		isRightDominated, rightIndicatorBase = false, indicatorBase
-	} else {
-		isRightDominated, rightIndicatorBase = n.right.calculateHypervolumeIndicatorBase(hypercube, indicatorBase, leftViable) // Keep original left viable.
-	}
-
-	// Dominated?
-	if isLeftDominated || isRightDominated {
-		return true, nil
-	}
-
-	// Not dominated, merge what we learned from both branches regarding the hypervolume indicator base.
-	indicatorBase = moveIndicatorBase(hypercube.dimensions, leftIndicatorBase, rightIndicatorBase)
-	return false, indicatorBase
 }
 
-// moveIndicatorBase moves the indicator base towards the limit based on the input. The limit is the point that defines
-// the opposite corner of the hypervolume indicator. We cannot move the base past it in any dimension. The input is the
-// corner of the other hypercube being considered, it is "consuming" volume from the hypervolume indicator by pushing
-// the base in any dimension that it already "owns".
-func moveIndicatorBase(limit []float64, base []float64, other []float64) (movedBase []float64) {
-	movedBase = make([]float64, len(base))
-	for i := range base {
-
-		// If the other cube dominates the searching cube in a given dimension, it has no effect on the
-		// indicator base. As long as the searching cube finds no hypercube that completely dominates
-		// every dimension it is not dominiated. It has a hypervolume indicator (some contribution it uniquely makes).
-		// The hypevolume indicator is only shrunk by dimensions that don't wholey erase the dimension.
-		if other[i] < limit[i] {
-			// What is highest value from indicator base and new point?
-			movedBase[i] = math.Max(base[i], other[i])
-		} else {
-			// If this is a whole dominated dimension, ignore it. Not part of hypercube indicator volume.
-			movedBase[i] = base[i]
+// dominateWholeBranch flags every cube in this branch of the k-d tree as dominated (existing inside another cube).
+func (n *hypercubeKdTreeNode) dominateWholeBranch() {
+	if n != nil {
+		if !n.isDominated {
+			n.hypercube.setDominated()
+			n.left.dominateWholeBranch()
+			n.right.dominateWholeBranch()
+			n.isDominated = true
 		}
 	}
-	return movedBase
-}
-
-// updateLeftViable udpates our bookkeeping to explore the left-hand branch (where numbers get lower). The right-hand
-// branch is already accounted for by checking if the searching cube is dominated.
-func updateLeftViable(dimension int, leftViable []bool, base []float64, other []float64) []bool {
-	// The numbers in the base always move higher. If the number in the current dimenions is less than or equal to the
-	// base, that dimension is no longer of interest for the hypervolume indicator (at least in left branch searches
-	// where numbers always go lower).
-	var newLeftViable []bool = make([]bool, len(leftViable))
-	copy(newLeftViable, leftViable)
-	if base[dimension] >= other[dimension] {
-		// The base is already equal to or higher in this dimension.
-		// We cannot improve the base by checking left-hand branches.
-		newLeftViable[dimension] = false
-	}
-	return newLeftViable
-}
-
-// isLeftViable checks out bookkeeping data, if any dimension is still viable in a left hand branch keep digging.
-// The moment no dimensino is of interested in the left hand branches, stop going down them.
-func isLeftViable(leftViable []bool) bool {
-	for _, viable := range leftViable {
-		if viable {
-			return true
-		}
-	}
-	return false
 }
 
 // kdCompareHypercubes compares two hypercubes at a node in the k-d tree and learns everything it can from them, altering them as needed to
 // to capture the learnings. Besides altering the hypercubes themselves, we learn if there is more to learn for the searching hypercube
-// down either or both of the branches.
+// down the left branch (smaller cubes) as well as whether all the left branch cubes are dominated by this.
 func kdCompareHypercubes(searchingHypercube *specimenHypercube, nodeHypercube *specimenHypercube, maximumLeft []float64) (isLeftSearchable bool, isLeftDominated bool) {
 
 	// If the cubes are the same cube, just bail.
@@ -437,8 +341,7 @@ func kdCompareHypercubes(searchingHypercube *specimenHypercube, nodeHypercube *s
 
 	// Remember our two indicators.
 	if isSearchingDominated || isSearchingPriorDominated {
-		searchingHypercube.isDominated = true
-		searchingHypercube.indicatorBase = nil
+		searchingHypercube.setDominated()
 		// If the searching cube is dominated there is nothing more to the left to check.
 		isLeftSearchable = false
 	} else {
@@ -447,8 +350,7 @@ func kdCompareHypercubes(searchingHypercube *specimenHypercube, nodeHypercube *s
 
 	// Remember our two indicators.
 	if isNodeDominated || isNodePriorDominated {
-		nodeHypercube.isDominated = true
-		nodeHypercube.indicatorBase = nil
+		nodeHypercube.setDominated()
 		// If the node cube is dominated, there still may be cubes to the left that could move the indicator.
 	} else {
 		nodeHypercube.indicatorBase = nodeBaseIndicator

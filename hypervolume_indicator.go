@@ -34,17 +34,10 @@ func calculateHypervolumeIndicators(hypercubes []*specimenHypercube) {
 
 			// This hypercube is not dominated, let's calculuate its hypervolume indicator.
 			// If one corner of the hypervolume indicator (a cube) is the hypercube's dimension, what is the other point?
-			if isDominated, indicatorBase := kdTree.calculateHypervolumeIndicatorBase(hypercube); isDominated {
+			kdTree.calculateHypervolumeIndicatorBase(hypercube)
 
-				// We have learned this hypercube is dominated.
-				hypercube.isDominated = true
-
-			} else {
-
-				// This hypercube is not domindated. Store the base and calculate the hypervolume indicator.
-				hypercube.indicatorBase = indicatorBase
-				hypercube.indicator = calculateHypervolume(hypercube.dimensions, hypercube.indicatorBase)
-			}
+			// We may be dominated, but we now have enough information to calcualte the hypervolume indicator if we are not.
+			hypercube.calculateHypervolumeIndicator()
 		}
 	}
 }

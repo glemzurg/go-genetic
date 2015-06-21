@@ -78,44 +78,6 @@ func (s *HypercubeKdTreeSuite) Test_NewHypecubeKdTree(c *C) {
 	c.Assert(func() { newHypecubeKdTree([]*specimenHypercube{&specimenHypercube{dimensions: []float64{}}}) }, Panics, `ERROR: newHypecubeKdTree called with hypercubes that have no dimensions`)
 }
 
-func (s *HypercubeKdTreeSuite) Test_MoveIndicatorBase(c *C) {
-
-	// Moving all values.
-	c.Assert(moveIndicatorBase([]float64{9.0, 9.0, 9.0}, []float64{1.0, 2.0, 3.0}, []float64{3.0, 2.0, 1.0}), DeepEquals, []float64{3.0, 2.0, 3.0})
-	c.Assert(moveIndicatorBase([]float64{9.0, 9.0, 9.0}, []float64{3.0, 2.0, 1.0}, []float64{1.0, 2.0, 3.0}), DeepEquals, []float64{3.0, 2.0, 3.0})
-
-	// For completeness, test negative values.
-	c.Assert(moveIndicatorBase([]float64{9.0, 9.0, 9.0}, []float64{-1.0, -2.0, -3.0}, []float64{-3.0, -2.0, -1.0}), DeepEquals, []float64{-1.0, -2.0, -1.0})
-	c.Assert(moveIndicatorBase([]float64{9.0, 9.0, 9.0}, []float64{-3.0, -2.0, -1.0}, []float64{-1.0, -2.0, -3.0}), DeepEquals, []float64{-1.0, -2.0, -1.0})
-
-	// Move value past limit have no effect.
-	c.Assert(moveIndicatorBase([]float64{9.0, 9.0, 9.0}, []float64{1.0, 2.0, 3.0}, []float64{13.0, 2.0, 1.0}), DeepEquals, []float64{1.0, 2.0, 3.0})
-	c.Assert(moveIndicatorBase([]float64{9.0, 9.0, 9.0}, []float64{3.0, 2.0, 1.0}, []float64{1.0, 12.0, 3.0}), DeepEquals, []float64{3.0, 2.0, 3.0})
-}
-
-func (s *HypercubeKdTreeSuite) Test_UpdateLeftViable(c *C) {
-
-	// A dimension turns off.
-	c.Assert(updateLeftViable(0, []bool{true, true, true}, []float64{1.0, 2.0, 3.0}, []float64{3.0, 1.0, 1.0}), DeepEquals, []bool{true, true, true})
-	c.Assert(updateLeftViable(0, []bool{true, true, true}, []float64{1.0, 2.0, 3.0}, []float64{1.0, 1.0, 4.0}), DeepEquals, []bool{false, true, true})
-
-	// A dimension stays off.
-	c.Assert(updateLeftViable(0, []bool{false, true, true}, []float64{1.0, 2.0, 3.0}, []float64{3.0, 1.0, 1.0}), DeepEquals, []bool{false, true, true})
-	c.Assert(updateLeftViable(0, []bool{false, true, true}, []float64{1.0, 2.0, 3.0}, []float64{1.0, 1.0, 4.0}), DeepEquals, []bool{false, true, true})
-
-	// Changing a different dimension.
-	c.Assert(updateLeftViable(1, []bool{true, true, true}, []float64{1.0, 2.0, 3.0}, []float64{3.0, 1.0, 1.0}), DeepEquals, []bool{true, false, true})
-}
-
-func (s *HypercubeKdTreeSuite) Test_IsLeftViable(c *C) {
-
-	// At least one viable makes it viable.
-	c.Assert(isLeftViable([]bool{true, true, true}), Equals, true)
-	c.Assert(isLeftViable([]bool{true, false, true}), Equals, true)
-	c.Assert(isLeftViable([]bool{true, false, false}), Equals, true)
-	c.Assert(isLeftViable([]bool{false, false, false}), Equals, false)
-}
-
 func (s *HypercubeKdTreeSuite) Test_KdCompareHypercubes(c *C) {
 
 	// Determine whether it is meaningful for the cube to search down the left branch of the k-d tree.

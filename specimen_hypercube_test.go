@@ -71,9 +71,10 @@ func (s *SpecimenHypercubeSuite) Test_NewSpecimenHypercube(c *C) {
 
 	// The expected hypercube.
 	var expectedHypercube specimenHypercube = specimenHypercube{
-		dimensions: []float64{5.0 * 3.0, 6.0 * 2.0, 1.0 * 1.0},
-		volume:     (5.0 * 3.0) * (6.0 * 2.0) * (1.0 * 1.0),
-		specimen:   specimen,
+		dimensions:    []float64{5.0 * 3.0, 6.0 * 2.0, 1.0 * 1.0},
+		volume:        (5.0 * 3.0) * (6.0 * 2.0) * (1.0 * 1.0),
+		specimen:      specimen,
+		indicatorBase: []float64{0.0, 0.0, 0.0},
 	}
 
 	// Create a new hypercube.
