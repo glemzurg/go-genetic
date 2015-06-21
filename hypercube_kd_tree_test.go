@@ -236,3 +236,23 @@ func (s *HypercubeKdTreeSuite) Test_KdCompareHypercubes(c *C) {
 	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.5, 1.0}})
 	c.Assert(nodeHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{2.0, 1.0}, indicatorBase: []float64{1.0, 0.5}, comparedWith: map[*specimenHypercube]bool{searchingHypercube: true}})
 }
+
+func (s *HypercubeKdTreeSuite) Test_CalculateNewMaximumLeft(c *C) {
+
+	// First build up the maximum left.
+	c.Check(calculateNewMaximumLeft(nil, 3, 0, 1.0), DeepEquals, []float64{1.0})
+	c.Check(calculateNewMaximumLeft([]float64{1.0}, 3, 1, 2.0), DeepEquals, []float64{1.0, 2.0})
+	c.Check(calculateNewMaximumLeft([]float64{1.0, 2.0}, 3, 2, 3.0), DeepEquals, []float64{1.0, 2.0, 3.0})
+	c.Check(calculateNewMaximumLeft([]float64{1.0, 2.0, 3.0}, 3, 0, 0.5), DeepEquals, []float64{0.5, 2.0, 3.0})
+	c.Check(calculateNewMaximumLeft([]float64{0.5, 2.0, 3.0}, 3, 1, 1.5), DeepEquals, []float64{0.5, 1.5, 3.0})
+	c.Check(calculateNewMaximumLeft([]float64{0.5, 1.5, 3.0}, 3, 2, 2.5), DeepEquals, []float64{0.5, 1.5, 2.5})
+
+	// Setting to the same value is ok.
+	c.Check(calculateNewMaximumLeft([]float64{1.0, 2.0, 3.0}, 3, 0, 1.0), DeepEquals, []float64{1.0, 2.0, 3.0})
+	c.Check(calculateNewMaximumLeft([]float64{1.0, 2.0, 3.0}, 3, 1, 2.0), DeepEquals, []float64{1.0, 2.0, 3.0})
+	c.Check(calculateNewMaximumLeft([]float64{1.0, 2.0, 3.0}, 3, 2, 3.0), DeepEquals, []float64{1.0, 2.0, 3.0})
+
+	// Invalid params.
+	c.Check(func() { calculateNewMaximumLeft([]float64{1.0}, 3, 2, 3.0) }, Panics, "ASSERT: invalid maximum left append: 2 [1.000000]")
+	c.Check(func() { calculateNewMaximumLeft([]float64{1.0, 2.0, 3.0}, 3, 1, 2.1) }, Panics, "ASSERT: invalid maximum left update: 2.100000 [1 2 3]")
+}

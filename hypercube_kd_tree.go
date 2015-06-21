@@ -32,7 +32,7 @@ func newHypecubeKdTree(hypercubes []*specimenHypercube) hypercubeKdTree {
 
 	// Build the tree.
 	return hypercubeKdTree{
-		root: newHypercubeKdTreeNode(hypercubes, dimensions, 0),
+		root: newHypercubeKdTreeNode(hypercubes, dimensions, 0, nil),
 	}
 }
 
@@ -56,14 +56,15 @@ func (t *hypercubeKdTree) calculateHypervolumeIndicatorBase(hypercube *specimenH
 // hypercubeKdTreeNode is a single node in the search tree. Some portion of the hypercube population is
 // in this node, split over a particular dimension into a left and right branch.
 type hypercubeKdTreeNode struct {
-	dimension int                  // The dimension this node was split on.
-	hypercube *specimenHypercube   // The hypercube at this node.
-	left      *hypercubeKdTreeNode // The hypercubes branch of this node with a dimensional value less than this node's hypercube.
-	right     *hypercubeKdTreeNode // The hypercubes branch of this node with a dimensional value greater than this node's hypercube.
+	dimension   int                  // The dimension this node was split on.
+	hypercube   *specimenHypercube   // The hypercube at this node.
+	maximumLeft []float64            // The maximum hypercube that could exist in a left branch (the branch may be nil though). Nil if we're not deep enough in tree to know.
+	left        *hypercubeKdTreeNode // The hypercubes branch of this node with a dimensional value less than this node's hypercube.
+	right       *hypercubeKdTreeNode // The hypercubes branch of this node with a dimensional value greater than this node's hypercube.
 }
 
 // newHypercubeKdTreeNode creates a new node recusively from remaining hypercubes, recursively.
-func newHypercubeKdTreeNode(hypercubes []*specimenHypercube, dimensions int, depth int) hypercubeKdTreeNode {
+func newHypercubeKdTreeNode(hypercubes []*specimenHypercube, dimensions int, depth int, maximumLeft []float64) hypercubeKdTreeNode {
 
 	// For each level the tree, sort and split the remaining hypercubes on a new dimension,
 	// eventually starting over at the first dimension again.
@@ -115,18 +116,70 @@ func newHypercubeKdTreeNode(hypercubes []*specimenHypercube, dimensions int, dep
 
 	// Anything for the left branch?
 	if len(leftHypercubes) > 0 {
-		var left hypercubeKdTreeNode = newHypercubeKdTreeNode(leftHypercubes, dimensions, depth+1)
+
+		// We have cubes to the left, compute the the maximum possible hypercube to the left.
+		// What is the highest value in this dimension?
+		var lastLeftHypercube *specimenHypercube = leftHypercubes[len(leftHypercubes)-1]
+		var maximumLeftValue float64 = lastLeftHypercube.dimensions[splitDimension]
+
+		// Add this information to the maximum left value.
+		var newMaximumLeft []float64 = calculateNewMaximumLeft(maximumLeft, dimensions, splitDimension, maximumLeftValue)
+
+		var left hypercubeKdTreeNode = newHypercubeKdTreeNode(leftHypercubes, dimensions, depth+1, newMaximumLeft)
 		node.left = &left
+		node.maximumLeft = newMaximumLeft
 	}
 
 	// Anything for the right branch?
 	if len(rightHypercubes) > 0 {
-		var right hypercubeKdTreeNode = newHypercubeKdTreeNode(rightHypercubes, dimensions, depth+1)
+
+		// We have cubes to the right, compute the the maximum possible hypercube to the right.
+		// What is the highest value in this dimension?
+		var lastRightHypercube *specimenHypercube = rightHypercubes[len(rightHypercubes)-1]
+		var maximumRightValue float64 = lastRightHypercube.dimensions[splitDimension]
+
+		// Add this information to the maximum left value.
+		var newMaximumLeft []float64 = calculateNewMaximumLeft(maximumLeft, dimensions, splitDimension, maximumRightValue)
+
+		var right hypercubeKdTreeNode = newHypercubeKdTreeNode(rightHypercubes, dimensions, depth+1, newMaximumLeft)
 		node.right = &right
 	}
 
 	// Return our finished node and its subtrees.
 	return node
+}
+
+// calculateNewMaximumLeft updates the maximum left with a new value indicating the highest value in a specific
+// dimension down the next left-hand branch. If the full maximum left isn't filled out yet, just keep building it.
+func calculateNewMaximumLeft(maximumLeft []float64, dimensions int, splitDimension int, maximumLeftValue float64) []float64 {
+	var newMaximumLeft []float64 = make([]float64, len(maximumLeft))
+	copy(newMaximumLeft, maximumLeft)
+
+	// Update the new maximum left value.
+	// If we have yet to get a set of dimensions, keep building.
+	if len(newMaximumLeft) < dimensions {
+
+		// Sanity check, if we are building up the list the length should be equal to the split dimension
+		// which would be one less than the dimension we are working with (dimension 1 is split dimension index 0)
+		if len(newMaximumLeft) != splitDimension {
+			log.Panicf("ASSERT: invalid maximum left append: %d %f", splitDimension, newMaximumLeft)
+		}
+
+		// Add the next dimension.
+		newMaximumLeft = append(newMaximumLeft, maximumLeftValue)
+
+	} else {
+
+		// Sanity check, if we are updating an existing value, we can only ever make it smaller.
+		if maximumLeftValue > newMaximumLeft[splitDimension] {
+			log.Panicf("ASSERT: invalid maximum left update: %f %v", maximumLeftValue, newMaximumLeft)
+		}
+
+		// Update the value in the given position.
+		newMaximumLeft[splitDimension] = maximumLeftValue
+	}
+
+	return newMaximumLeft
 }
 
 // calculateHypervolumeIndicator searches this node and its children for hypercubes that would increase the size of the hypervolume indicator's base.
