@@ -41,25 +41,31 @@ func (s *HypercubeKdTreeSuite) Test_NewHypecubeKdTree(c *C) {
 	//
 	c.Assert(kdTree.root.dimension, Equals, 0)
 	c.Assert(kdTree.root.hypercube, Equals, &cube72)
+	c.Assert(kdTree.root.maximumLeft, Equals, nil)
 
 	c.Assert(kdTree.root.left.dimension, Equals, 1)
 	c.Assert(kdTree.root.left.hypercube, Equals, &cube54)
+	c.Assert(kdTree.root.left.maximumLeft, Equals, []float64{5.0, 3.0})
 
 	c.Assert(kdTree.root.left.left.dimension, Equals, 0)
 	c.Assert(kdTree.root.left.left.hypercube, Equals, &cube23)
+	c.Assert(kdTree.root.left.left.maximumLeft, Equals, nil)
 	c.Assert(kdTree.root.left.left.left, Equals, emptyNode)
 	c.Assert(kdTree.root.left.left.right, Equals, emptyNode)
 
 	c.Assert(kdTree.root.left.right.dimension, Equals, 0)
 	c.Assert(kdTree.root.left.right.hypercube, Equals, &cube47)
+	c.Assert(kdTree.root.left.right.maximumLeft, Equals, nil)
 	c.Assert(kdTree.root.left.right.left, Equals, emptyNode)
 	c.Assert(kdTree.root.left.right.right, Equals, emptyNode)
 
 	c.Assert(kdTree.root.right.dimension, Equals, 1)
 	c.Assert(kdTree.root.right.hypercube, Equals, &cube96)
+	c.Assert(kdTree.root.right.maximumLeft, Equals, []float64{9.0, 1.0})
 
 	c.Assert(kdTree.root.right.left.dimension, Equals, 0)
 	c.Assert(kdTree.root.right.left.hypercube, Equals, &cube81)
+	c.Assert(kdTree.root.right.left.maximumLeft, Equals, nil)
 	c.Assert(kdTree.root.right.left.left, Equals, emptyNode)
 	c.Assert(kdTree.root.right.left.right, Equals, emptyNode)
 

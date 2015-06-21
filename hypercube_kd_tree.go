@@ -127,7 +127,12 @@ func newHypercubeKdTreeNode(hypercubes []*specimenHypercube, dimensions int, dep
 
 		var left hypercubeKdTreeNode = newHypercubeKdTreeNode(leftHypercubes, dimensions, depth+1, newMaximumLeft)
 		node.left = &left
-		node.maximumLeft = newMaximumLeft
+
+		// Only remember the maximum left if it is complete hypercube, otherwise nil means the node doens't know
+		// enough about what's on the left-hand branch.
+		if len(newMaximumLeft) == dimensions {
+			node.maximumLeft = newMaximumLeft
+		}
 	}
 
 	// Anything for the right branch?
