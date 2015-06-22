@@ -231,10 +231,6 @@ func (n *hypercubeKdTreeNode) dominateWholeBranch() {
 // down the left branch (smaller cubes) as well as whether all the left branch cubes are dominated by this.
 func kdCompareHypercubes(searchingHypercube *specimenHypercube, nodeHypercube *specimenHypercube, maximumLeft []float64) (isLeftSearchable bool, isLeftDominated bool) {
 
-	log.Println("=================")
-	log.Println(searchingHypercube)
-	log.Println(nodeHypercube)
-
 	// If the cubes are the same cube, just bail.
 	if searchingHypercube == nodeHypercube {
 		// Assume we need to keep searching left and nothing to the left is dominated.
