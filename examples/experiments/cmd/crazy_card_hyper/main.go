@@ -50,8 +50,8 @@ func main() {
 		log.Panic(err)
 	}
 
-	var selector genetic.SelectorElitism
-	if selector, err = genetic.LoadSelectorElitismConfig(*selectorFilename); err != nil {
+	var selector genetic.SelectorTournament
+	if selector, err = genetic.LoadSelectorTournamentConfig(*selectorFilename); err != nil {
 		log.Panic(err)
 	}
 

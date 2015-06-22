@@ -3,7 +3,7 @@
   "Population": {
     "PopulationSize": 100,
     "Speciation": {
-      "Threshold": 0.18,
+      "Threshold": 0.3,
       "C1": 1.0,
       "C2": 1.0,
       "C3": 1.0
@@ -23,6 +23,6 @@
     "StagnantGenerationCount": 0
   },
   "Database": {
-    "RecordEveryNthGeneration": 20
+    "RecordEveryNthGeneration": 50
   }
 }

@@ -24,7 +24,7 @@ func LoadSelectorElitismConfig(filename string) (SelectorElitism, error) {
 	var bytes []byte
 	var selector SelectorElitism
 
-	log.Printf("Loading truncate selector Config: '%s'\n", filename)
+	log.Printf("Loading elitism selector Config: '%s'\n", filename)
 
 	// Load and parse from json.
 	if bytes, err = ioutil.ReadFile(filename); err != nil {
