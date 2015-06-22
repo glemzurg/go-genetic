@@ -80,6 +80,13 @@ func (h *specimenHypercube) setDominated() {
 func (h *specimenHypercube) calculateHypervolumeIndicator() {
 	if !h.isDominated {
 		h.indicator = calculateHypervolume(h.dimensions, h.indicatorBase)
+		// There is a special case. If the indicator base was (0.0, 0.0, ...) then
+		// there was no other cube that shapes this cube's indicator. This cube
+		// dominated all other cubes (contained them within ourselves). In that case
+		// there is actually no hypervolume indicator.
+		if h.indicator == h.volume {
+			h.indicator = 0.0
+		}
 	}
 }
 
