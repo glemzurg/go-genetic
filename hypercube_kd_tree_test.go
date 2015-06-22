@@ -132,7 +132,7 @@ func (s *HypercubeKdTreeSuite) Test_KdCompareHypercubes(c *C) {
 	isLeftSearchable, isLeftDominated = kdCompareHypercubes(searchingHypercube, nodeHypercube, maximumLeft)
 	c.Check(isLeftSearchable, Equals, true) // Don't know what's down left branch, need to search.
 	c.Check(isLeftDominated, Equals, false) // Don't know what's down left branch, not dominated (as far as we know).
-	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.5, 1.0}})
+	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.0, 0.0}})
 	c.Assert(nodeHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{0.5, 1.0}, isDominated: true, indicatorBase: nil})
 
 	// Reverse the inputs.
@@ -142,7 +142,7 @@ func (s *HypercubeKdTreeSuite) Test_KdCompareHypercubes(c *C) {
 	c.Check(isLeftSearchable, Equals, false) // Searching cube dominated, nothing more to search.
 	c.Check(isLeftDominated, Equals, false)  // Don't know what's down left branch, not dominated (as far as we know).
 	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{0.5, 1.0}, isDominated: true, indicatorBase: nil})
-	c.Assert(nodeHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.5, 1.0}, comparedWith: map[*specimenHypercube]bool{searchingHypercube: true}})
+	c.Assert(nodeHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, indicatorBase: []float64{0.0, 0.0}})
 
 	// One cube already dominated.
 	searchingHypercube = &specimenHypercube{dimensions: []float64{1.0, 2.0}, isDominated: true, indicatorBase: nil}
@@ -151,7 +151,7 @@ func (s *HypercubeKdTreeSuite) Test_KdCompareHypercubes(c *C) {
 	c.Check(isLeftSearchable, Equals, false) // Searching cube dominated, nothing more can be done for hypervolume indicator.
 	c.Check(isLeftDominated, Equals, false)  // Don't know what's down left branch, not dominated (as far as we know).
 	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, isDominated: true, indicatorBase: nil})
-	c.Assert(nodeHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{2.0, 1.0}, indicatorBase: []float64{1.0, 0.0}, comparedWith: map[*specimenHypercube]bool{searchingHypercube: true}})
+	c.Assert(nodeHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{2.0, 1.0}, indicatorBase: []float64{0.0, 0.0}})
 
 	// Reverse the inputs.
 	searchingHypercube = &specimenHypercube{dimensions: []float64{2.0, 1.0}, indicatorBase: []float64{0.0, 0.0}}
@@ -159,7 +159,7 @@ func (s *HypercubeKdTreeSuite) Test_KdCompareHypercubes(c *C) {
 	isLeftSearchable, isLeftDominated = kdCompareHypercubes(searchingHypercube, nodeHypercube, maximumLeft)
 	c.Check(isLeftSearchable, Equals, true) // Don't know what's down left branch, need to search.
 	c.Check(isLeftDominated, Equals, false) // Don't know what's down left branch, not dominated (as far as we know).
-	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{2.0, 1.0}, indicatorBase: []float64{1.0, 0.0}})
+	c.Check(searchingHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{2.0, 1.0}, indicatorBase: []float64{0.0, 0.0}})
 	c.Assert(nodeHypercube, DeepEquals, &specimenHypercube{dimensions: []float64{1.0, 2.0}, isDominated: true, indicatorBase: nil})
 
 	// Both cubes dominated.

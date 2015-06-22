@@ -189,7 +189,7 @@ func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *speci
 
 	// Are all the left branch cubes dominated? They may still move the hypervolume indicator so have to be searched.
 	// But since we know, update them accordingly.
-	if isLeftDominated && n.left != nil {
+	if isLeftDominated {
 		n.left.dominateWholeBranch()
 	}
 
@@ -206,8 +206,8 @@ func (n *hypercubeKdTreeNode) calculateHypervolumeIndicatorBase(hypercube *speci
 		if !hypercube.isDominated {
 
 			// We may have discovered there is nothing more to learn going down the left branch.
-			// But if there is, continue.
-			if n.left != nil && isLeftSearchable {
+			// Also, if the left branch is dominated, it cannot shape hypervolume indicators.
+			if n.left != nil && isLeftSearchable && !isLeftDominated {
 				n.left.calculateHypervolumeIndicatorBase(hypercube)
 			}
 		}
@@ -231,8 +231,22 @@ func (n *hypercubeKdTreeNode) dominateWholeBranch() {
 // down the left branch (smaller cubes) as well as whether all the left branch cubes are dominated by this.
 func kdCompareHypercubes(searchingHypercube *specimenHypercube, nodeHypercube *specimenHypercube, maximumLeft []float64) (isLeftSearchable bool, isLeftDominated bool) {
 
+	log.Println("=================")
+	log.Println(searchingHypercube)
+	log.Println(nodeHypercube)
+
 	// If the cubes are the same cube, just bail.
 	if searchingHypercube == nodeHypercube {
+		// Assume we need to keep searching left and nothing to the left is dominated.
+		return true, false
+	}
+
+	// If either cube is dominated, there is nothing to learn about the hypervolume indicators from comparing them.
+	if searchingHypercube.isDominated {
+		// Search cube is dominated so there is nothing more to search to the left. Don't know whether left branch is dominated.
+		return false, false
+	}
+	if nodeHypercube.isDominated {
 		// Assume we need to keep searching left and nothing to the left is dominated.
 		return true, false
 	}
@@ -339,27 +353,46 @@ func kdCompareHypercubes(searchingHypercube *specimenHypercube, nodeHypercube *s
 		isNodeDominated = true
 	}
 
+	// Regardless of what we just learned about our cubes, we cannot undo domination.
+	if isSearchingPriorDominated {
+		isSearchingDominated = true
+	}
+	if isNodePriorDominated {
+		isNodeDominated = true
+	}
+
 	// Remember our two indicators.
-	if isSearchingDominated || isSearchingPriorDominated {
+	if isSearchingDominated {
 		searchingHypercube.setDominated()
 		// If the searching cube is dominated there is nothing more to the left to check.
 		isLeftSearchable = false
 	} else {
-		searchingHypercube.indicatorBase = searchingBaseIndicator
+		// If the node cube is dominated it cannot tell us anything about our hypervolume indicator base.
+		// Only cubes that define the outer edge of the hypercube populate can shape the hypervolume indicator.
+		// Consider, that if hidden cubes could then a mass of little shapes would overlay and shrink our
+		// indicator to something very small, not representative of how much volume this hypercube has which
+		// doesn't overlay other cubes.
+		if !isNodeDominated {
+			searchingHypercube.indicatorBase = searchingBaseIndicator
+		}
 	}
 
 	// Remember our two indicators.
-	if isNodeDominated || isNodePriorDominated {
+	if isNodeDominated {
 		nodeHypercube.setDominated()
 		// If the node cube is dominated, there still may be cubes to the left that could move the indicator.
 	} else {
-		nodeHypercube.indicatorBase = nodeBaseIndicator
-		// Remember on the node cube that we compared these cubes.
-		// When its the node cube's time to search it can skip the tests against the current searching cube.
-		if nodeHypercube.comparedWith == nil {
-			nodeHypercube.comparedWith = map[*specimenHypercube]bool{}
+		// If the other cube is not dominated remember our indicator.
+		// If hte other cube is dominated, it can't influence indicators.
+		if !isSearchingDominated {
+			nodeHypercube.indicatorBase = nodeBaseIndicator
+			// Remember on the node cube that we compared these cubes.
+			// When its the node cube's time to search it can skip the tests against the current searching cube.
+			if nodeHypercube.comparedWith == nil {
+				nodeHypercube.comparedWith = map[*specimenHypercube]bool{}
+			}
+			nodeHypercube.comparedWith[searchingHypercube] = true
 		}
-		nodeHypercube.comparedWith[searchingHypercube] = true
 	}
 
 	return isLeftSearchable, isLeftDominated

@@ -17,16 +17,20 @@ func (s *HypervolumeIndicatorSuite) Test_CalculateHypervolumeIndicators(c *C) {
 	// In our code we have been normalized to always be positive dimensions with zero as the base. In the examine the reference point
 	// is 2.0, 2.0 and the cubes are stretching towards 0.0, 0.0.
 	var cube2010 specimenHypercube = specimenHypercube{
-		dimensions: []float64{2.0, 1.0},
+		dimensions:    []float64{2.0, 1.0},
+		indicatorBase: []float64{0.0, 0.0},
 	}
 	var cube1515 specimenHypercube = specimenHypercube{
-		dimensions: []float64{1.5, 1.5},
+		dimensions:    []float64{1.5, 1.5},
+		indicatorBase: []float64{0.0, 0.0},
 	}
 	var cube1020 specimenHypercube = specimenHypercube{
-		dimensions: []float64{1.0, 2.0},
+		dimensions:    []float64{1.0, 2.0},
+		indicatorBase: []float64{0.0, 0.0},
 	}
 	var cube0513 specimenHypercube = specimenHypercube{
-		dimensions: []float64{0.5, 1.3}, // 1.25 in the example, but dominated either way.
+		dimensions:    []float64{0.5, 1.3}, // 1.25 in the example, but dominated either way.
+		indicatorBase: []float64{0.0, 0.0},
 	}
 
 	// What do we expect these cubes to compute to?
@@ -67,10 +71,25 @@ func (s *HypervolumeIndicatorSuite) Test_CalculateHypervolumeIndicators(c *C) {
 	calculateHypervolumeIndicators(hypercubes)
 
 	// Did we get what we expected?
-	c.Check(cube2010, DeepEquals, expectedCube2010)
-	c.Check(cube1515, DeepEquals, expectedCube1515)
-	c.Check(cube1020, DeepEquals, expectedCube1020)
-	c.Check(cube0513, DeepEquals, expectedCube0513)
+	c.Check(cube2010.dimensions, DeepEquals, expectedCube2010.dimensions)
+	c.Check(cube2010.isDominated, Equals, expectedCube2010.isDominated)
+	c.Check(cube2010.indicator, Equals, expectedCube2010.indicator)
+	c.Check(cube2010.indicatorBase, DeepEquals, expectedCube2010.indicatorBase)
+
+	c.Check(cube1515.dimensions, DeepEquals, expectedCube1515.dimensions)
+	c.Check(cube1515.isDominated, Equals, expectedCube1515.isDominated)
+	c.Check(cube1515.indicator, Equals, expectedCube1515.indicator)
+	c.Check(cube1515.indicatorBase, DeepEquals, expectedCube1515.indicatorBase)
+
+	c.Check(cube1020.dimensions, DeepEquals, expectedCube1020.dimensions)
+	c.Check(cube1020.isDominated, Equals, expectedCube1020.isDominated)
+	c.Check(cube1020.indicator, Equals, expectedCube1020.indicator)
+	c.Check(cube1020.indicatorBase, DeepEquals, expectedCube1020.indicatorBase)
+
+	c.Check(cube0513.dimensions, DeepEquals, expectedCube0513.dimensions)
+	c.Check(cube0513.isDominated, Equals, expectedCube0513.isDominated)
+	c.Check(cube0513.indicator, Equals, expectedCube0513.indicator)
+	c.Check(cube0513.indicatorBase, DeepEquals, expectedCube0513.indicatorBase)
 }
 
 func (s *HypervolumeIndicatorSuite) Test_CalculateHypervolume(c *C) {
