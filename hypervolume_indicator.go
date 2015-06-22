@@ -21,6 +21,9 @@ import (
 // point of (0.0, 0.0, ...) so the hypervolume indicator is found by keeping the defining point and then moving the base point closer to it. We move the base point closer to
 // the defining point whenever we find another hypercube that has "consumed" part of this shrinking hypercube's volume. After going through all the other members of the population,
 // our remaining volume is the hypervolume indicator. If the remaining volume has become zero, this hypercube is dominated.
+//
+// Reference: https://ls11-www.cs.uni-dortmund.de/rudolph/hypervolume/start
+// Reference: http://esa.github.io/pygmo/tutorials/getting_started_with_hyper_volumes.html
 func calculateHypervolumeIndicators(hypercubes []*specimenHypercube) {
 
 	// Sort the hypercubes into a k-d tree for quicker searching.
